@@ -1,2 +1,2 @@
-# usenet_histories_project
-A simple interactive webpage that talks about the history of usenet.
+# Usenet Early Histories Project
+A simple interactive webpage about Usenet history and its early discourses. Truly just a side project from my master's thesis, and a way for me to practice HTML/CSS, R, and Python. 
