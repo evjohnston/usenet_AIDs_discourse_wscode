@@ -65,15 +65,18 @@ library(tidyverse)
 library(readr)
 library(webshot)
 library(htmltools)
+# Load necessary library
+library(dplyr)
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
 ```
 ## Read and Clean CSVs
 ```{r}
-# Load necessary libraries
-library(dplyr)
-
 # Load Directories
-threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
-comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
+output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
+threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
+comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments"
 
 # Load the datasets
 all_threads <- read.csv(file.path(threads_directory, "combined_threads.csv"))
@@ -119,10 +122,6 @@ head(all_comments)
 ```
 ## Fix Date and Time Columns
 ```{r}
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
-
 # Function to clean the datetime strings
 clean_datetime <- function(dt_str) {
   gsub("[^[:alnum:] [:punct:]]", "", dt_str)
@@ -152,61 +151,9 @@ write.csv(all_threads, file.path(threads_directory, "combined_threads_cleaned.cs
 write.csv(all_comments, file.path(comments_directory, "combined_comments_cleaned.csv"), row.names = FALSE)
 ```
 
-# Descriptive Statistics
+# Filter Additionally by Keyword
+```{r Filter by Keyword}
 
-## Primary
-```{r}
-# Load necessary library
-library(dplyr)
-library(sjPlot)
-
-# Calculate statistics using dplyr
-summary_df <- all_comments %>%
-  group_by(newsgroup) %>%
-  summarize(
-    Threads = n_distinct(Thread.ID),
-    Comments = n(),
-    Authors = n_distinct(Author),
-    Avg_Comments_Per_Thread = Comments / Threads,
-    Avg_Sentiment_Score = mean(SentimentScore, na.rm = TRUE)
-  )
-
-# Add a totals row
-totals <- summary_df %>%
-  summarize(
-    newsgroup = "Total",
-    Threads = sum(Threads),
-    Comments = sum(Comments),
-    Authors = n_distinct(all_comments$Author),
-    Avg_Comments_Per_Thread = sum(Comments) / sum(Threads),
-    Avg_Sentiment_Score = mean(all_comments$SentimentScore, na.rm = TRUE)
-  )
-
-# Combine the summary with the totals row
-summary_df <- bind_rows(summary_df, totals)
-
-# Print the summary data frame with totals
-tab_df(summary_df, file = "Images and Tables/descriptive_statistics_table.html")
-```
-
-```{r}
-library(knitr)
-library(kableExtra)
-
-# Create the table
-summary_table <- kable(summary_df, format = "html", table.attr = "style='width:100%;'") %>%
-  kable_styling(full_width = FALSE) %>%
-  row_spec(0, bold = TRUE) %>%  # Make the first row bold
-  row_spec(nrow(summary_df), hline_after = TRUE)  # Add a line after the second to last row
-
-# Print the table
-summary_table
-```
-
-## Keyword Search Statistics
-```{r}
-# Load necessary library
-library(dplyr)
 
 # List of extended keywords and phrases
 keywords <- c("aids", "hiv", "acquired immune deficiency syndrome", "human immunodeficiency virus",
@@ -263,8 +210,7 @@ keywords_summary_df <- bind_rows(keywords_summary_df, totals)
 print(keywords_summary_df)
 ```
 
-## Save Keyword CSVs to File
-```{r}
+```{r Save Keyword CSVs to File}
 # Collect all related threads and comments
 related_threads <- all_threads %>%
   filter(Unique_ThreadID %in% threads_with_keywords) %>%
@@ -277,4 +223,39 @@ related_comments <- all_comments %>%
 # Write the related threads and comments to CSV files
 write.csv(related_threads, file.path(threads_directory, "aids_related_threads.csv"), row.names = FALSE)
 write.csv(related_comments, file.path(comments_directory, "aids_related_comments.csv"), row.names = FALSE)
+```
+
+# Table and Figures
+```{r Descriptive Statistics}
+# Load necessary library
+library(dplyr)
+library(sjPlot)
+
+# Calculate statistics using dplyr
+summary_df <- all_comments %>%
+  group_by(newsgroup) %>%
+  summarize(
+    Threads = n_distinct(Thread.ID),
+    Comments = n(),
+    Authors = n_distinct(Author),
+    Avg_Comments_Per_Thread = Comments / Threads,
+    Avg_Sentiment_Score = mean(SentimentScore, na.rm = TRUE)
+  )
+
+# Add a totals row
+totals <- summary_df %>%
+  summarize(
+    newsgroup = "Total",
+    Threads = sum(Threads),
+    Comments = sum(Comments),
+    Authors = n_distinct(all_comments$Author),
+    Avg_Comments_Per_Thread = sum(Comments) / sum(Threads),
+    Avg_Sentiment_Score = mean(all_comments$SentimentScore, na.rm = TRUE)
+  )
+
+# Combine the summary with the totals row
+summary_df <- bind_rows(summary_df, totals)
+
+# Print the summary data frame with totals
+tab_df(summary_df, file = paste0(output_directory, "Images and Tables/descriptive_statistics_table.html"))
 ```
