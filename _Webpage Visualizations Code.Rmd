@@ -11,7 +11,7 @@ output:
 # Maintenance and Cleaning
 ```{r Reset and Setup}
 rm(list = ls()) 
-knitr::opts_knit$set(root.dir = '/Users/emerson/Github/Usenet')
+knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_early_histories_project')
 ```
 
 ```{r Import necessary R libraries}
