@@ -35,6 +35,25 @@ all_threads <- read.csv(file.path(threads_directory, "aids_related_threads.csv")
 all_comments <- read.csv(file.path(comments_directory, "aids_related_comments.csv"))
 ```
 
+```{r R CSV Cleaning}
+all_threads <- all_threads %>% drop_na()
+all_comments <- all_comments %>% drop_na()
+
+# Ensure the 'Date' columns are properly formatted as Date objects
+all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
+all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
+
+# Filter the datasets to include only data before January 1, 1989
+all_comments <- all_comments %>%
+  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+all_threads <- all_threads %>%
+  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+write.csv(all_threads, file.path(threads_directory, "threads_cleaned_82TO89.csv"), row.names = FALSE)
+write.csv(all_comments, file.path(comments_directory, "comments_cleaned_82TO89.csv"), row.names = FALSE)
+```
+
 ```{python Python Load Libraries, Directories, and Datasets}
 import os
 import pandas as pd
@@ -54,25 +73,6 @@ comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV F
 # Load the datasets with the correct file paths
 all_threads = pd.read_csv(os.path.join(threads_directory, "threads_cleaned_82TO89.csv"))
 all_comments = pd.read_csv(os.path.join(comments_directory, "comments_cleaned_82TO89.csv"))
-```
-
-```{r R CSV Cleaning}
-all_threads <- all_threads %>% drop_na()
-all_comments <- all_comments %>% drop_na()
-
-# Ensure the 'Date' columns are properly formatted as Date objects
-all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
-all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
-
-# Filter the datasets to include only data before January 1, 1989
-all_comments <- all_comments %>%
-  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
-
-all_threads <- all_threads %>%
-  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
-
-write.csv(all_threads, file.path(threads_directory, "threads_cleaned_82TO89.csv"), row.names = FALSE)
-write.csv(all_comments, file.path(comments_directory, "comments_cleaned_82TO89.csv"), row.names = FALSE)
 ```
 
 # Initial Visualizations - Python
