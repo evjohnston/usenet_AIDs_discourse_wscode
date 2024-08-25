@@ -84,7 +84,7 @@ all_threads['Date'] = pd.to_datetime(all_threads['Date'])
 
 plt.figure(figsize=(10, 6))
 all_threads.groupby(all_threads['Date'].dt.to_period('M')).size().plot(kind='line')
-plt.title('Number of Threads Over Time')
+plt.title('Number of Threads Across All Newsgroups Over Time')
 plt.xlabel('Month')
 plt.ylabel('Number of Threads')
 plt.tight_layout()
