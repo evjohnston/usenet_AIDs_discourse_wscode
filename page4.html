@@ -190,13 +190,13 @@
         </section>
 
         <div class="button-group">
-            <a href="Site Pages/page3.html"><button>Back</button></a>
-            <a href="Site Pages/page5.html"><button>Next</button></a>
+            <a href="page3.html"><button>Back</button></a>
+            <a href="page5.html"><button>Next</button></a>
         </div>
     </div>
 
     <script>
-        fetch('Site Pages/menu.html')
+        fetch('menu.html')
             .then(response => response.text())
             .then(data => {
                 document.getElementById('menu-container').innerHTML = data;
