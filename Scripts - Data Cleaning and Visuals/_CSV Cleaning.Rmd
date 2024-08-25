@@ -59,20 +59,18 @@ rm(list = ls())
 setwd("/Users/emerson/Github/usenet_AIDs_discourses_webpage")
 ```
 
-## Loading Libraries
-```{r}
+## Maintenance
+```{r Load LIbraries, Directories, and Datasets}
+# Load Libraries
 library(tidyverse)
 library(readr)
 library(webshot)
 library(htmltools)
-# Load necessary library
-library(dplyr)
-# Load necessary libraries
 library(ggplot2)
 library(dplyr)
-```
-## Read and Clean CSVs
-```{r}
+library(syuzhet)
+library(sjPlot)
+
 # Load Directories
 output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
 threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
@@ -81,7 +79,9 @@ comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV 
 # Load the datasets
 all_threads <- read.csv(file.path(threads_directory, "combined_threads.csv"))
 all_comments <- read.csv(file.path(comments_directory, "combined_comments.csv"))
+```
 
+```{r Dataset Cleaning}
 # Assign unique identifiers to newsgroups
 newsgroup_ids <- c("netmed" = "NG01", "netmotss" = "NG02", "netnews" = "NG03",
                    "netpolitics" = "NG04", "netreligion" = "NG05", "netsingles" = "NG06")
@@ -116,12 +116,6 @@ all_comments <- all_comments %>%
   # Drop the old Unique.Comment.ID and Comment.ID columns
   select(-Unique.Comment.ID, -Comment.ID)
 
-# Display the updated dataframes (optional)
-head(all_threads)
-head(all_comments)
-```
-## Fix Date and Time Columns
-```{r}
 # Function to clean the datetime strings
 clean_datetime <- function(dt_str) {
   gsub("[^[:alnum:] [:punct:]]", "", dt_str)
@@ -137,24 +131,23 @@ all_comments$Hour <- as.numeric(format(all_comments$Date.and.Time, "%H"))
 all_comments$Date <- as.Date(all_comments$Date.and.Time)
 
 all_threads$Date <- as.Date(all_threads$Date, format = "%m/%d/%y")
+
+# Display the updated dataframes (optional)
+head(all_threads)
+head(all_comments)
 ```
 
-## Run and Sentiment Scores
-```{r} 
-library(syuzhet)
+```{r Run and Add Sentiment Scores} 
 all_comments <- all_comments %>% mutate(SentimentScore = get_sentiment(Full.Text, method = "afinn"))
 ```
 
-## Save Cleaned CSVs to File
-```{r}
+```{r Save Cleaned CSVs to File}
 write.csv(all_threads, file.path(threads_directory, "combined_threads_cleaned.csv"), row.names = FALSE)
 write.csv(all_comments, file.path(comments_directory, "combined_comments_cleaned.csv"), row.names = FALSE)
 ```
 
-# Filter Additionally by Keyword
+# Additional Filtering
 ```{r Filter by Keyword}
-
-
 # List of extended keywords and phrases
 keywords <- c("aids", "hiv", "acquired immune deficiency syndrome", "human immunodeficiency virus",
               "gay plague", "gay cancer", "kaposi's sarcoma", "pneumocystis pneumonia",
@@ -227,10 +220,6 @@ write.csv(related_comments, file.path(comments_directory, "aids_related_comments
 
 # Table and Figures
 ```{r Descriptive Statistics}
-# Load necessary library
-library(dplyr)
-library(sjPlot)
-
 # Calculate statistics using dplyr
 summary_df <- all_comments %>%
   group_by(newsgroup) %>%
