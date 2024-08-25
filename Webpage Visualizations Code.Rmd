@@ -1,0 +1,657 @@
+---
+title: "Web Page Visualization Code"
+author: "Emerson Johnston"
+lastmodifeddate: "2024-08-24"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Maintenance and Cleaning
+```{r Reset and Setup}
+rm(list = ls()) 
+knitr::opts_knit$set(root.dir = '/Users/emerson/Github/Usenet')
+```
+
+```{r Import necessary R libraries}
+# Load all necessary libraries at once
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(igraph)
+library(ggraph)
+library(tidytext)
+library(topicmodels)
+```
+
+```{r R Read and Clean CSVs}
+# Load Directories
+threads_directory <- "CSV Files/Threads"
+comments_directory <- "CSV Files/Comments"
+
+# Load the datasets
+all_threads <- read.csv("CSV Files/Threads/combined_threads_cleaned.csv")
+all_comments <- read.csv("CSV Files/Comments/combined_comments_cleaned.csv")
+
+all_threads <- all_threads %>% drop_na()
+all_comments <- all_comments %>% drop_na()
+
+# Ensure the 'Date' columns are properly formatted as Date objects
+all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
+all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
+
+# Filter the datasets to include only data before January 1, 1989
+all_comments <- all_comments %>%
+  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+all_threads <- all_threads %>%
+  filter(Date < as.Date("1989-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+write.csv(all_threads, file.path(threads_directory, "threads_cleaned_82TO89.csv"), row.names = FALSE)
+write.csv(all_comments, file.path(comments_directory, "comments_cleaned_82TO89.csv"), row.names = FALSE)
+```
+
+```{python Import necessary Python libraries}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import networkx as nx
+import scipy
+```
+
+```{python Python Read CSVs}
+all_comments = pd.read_csv("CSV Files/Comments/comments_cleaned_82TO89.csv")
+all_threads = pd.read_csv("CSV Files/Threads/threads_cleaned_82TO89.csv")
+```
+
+# Initial Visualizations
+```{python Distribution of Comments per Newsgroup}
+plt.figure(figsize=(10, 6))
+sns.countplot(data=all_comments, x='newsgroup', order=all_comments['newsgroup'].value_counts().index)
+plt.title('Distribution of Comments per Newsgroup')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/distribution_of_comments_per_newsgroup.png')
+plt.show()
+```
+
+```{python Number of Threads Over Time}
+all_threads['Date'] = pd.to_datetime(all_threads['Date'])
+
+plt.figure(figsize=(10, 6))
+all_threads.groupby(all_threads['Date'].dt.to_period('M')).size().plot(kind='line')
+plt.title('Number of Threads Over Time')
+plt.xlabel('Month')
+plt.ylabel('Number of Threads')
+plt.tight_layout()
+plt.savefig('images and tables/number_of_threads_over_time.png')
+plt.show()
+```
+
+```{python Average Number of Comments per Thread by Newsgroup}
+avg_comments_per_thread = all_threads.groupby('newsgroup')['Number.of.Messages'].mean().reset_index()
+
+plt.figure(figsize=(10, 6))
+sns.barplot(data=avg_comments_per_thread, x='newsgroup', y='Number.of.Messages', order=avg_comments_per_thread.sort_values('Number.of.Messages', ascending=False)['newsgroup'])
+plt.title('Average Number of Comments per Thread by Newsgroup')
+plt.xlabel('Newsgroup')
+plt.ylabel('Average Number of Comments')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/average_comments_per_thread_by_newsgroup.png')
+plt.show()
+```
+
+```{python Sentiment Score Distribution Across All Comments}
+plt.figure(figsize=(10, 6))
+sns.histplot(all_comments['SentimentScore'], bins=30, kde=True)
+plt.title('Sentiment Score Distribution Across All Comments')
+plt.xlabel('Sentiment Score')
+plt.ylabel('Frequency')
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_score_distribution_across_all_comments.png')
+plt.show()
+```
+
+```{python Top 25 Most Active Users}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Get the top 25 authors by the number of comments
+top_authors = all_comments['Author'].value_counts().head(25).index
+
+# Filter the dataset to include only the top 25 authors
+top_authors_data = all_comments[all_comments['Author'].isin(top_authors)]
+
+# Calculate the number of comments by each of the top 25 authors in each newsgroup
+comments_per_newsgroup = top_authors_data.groupby(['Author', 'newsgroup']).size().unstack(fill_value=0)
+
+# Sort authors by total number of comments in descending order
+comments_per_newsgroup['Total Comments'] = comments_per_newsgroup.sum(axis=1)
+comments_per_newsgroup = comments_per_newsgroup.sort_values('Total Comments', ascending=True)
+
+# Remove the 'Total Comments' column for plotting
+comments_per_newsgroup = comments_per_newsgroup.drop(columns='Total Comments')
+
+# Define a distinct color palette for newsgroups
+distinct_colors = sns.color_palette('tab20', len(comments_per_newsgroup.columns))
+
+# Plot a stacked bar plot without white lines between colors and with distinct colors
+comments_per_newsgroup.plot(kind='barh', stacked=True, figsize=(12, 8), color=distinct_colors, edgecolor='none')
+
+plt.title('Top 25 Most Active Users by Newsgroup')
+plt.xlabel('Number of Comments')
+plt.ylabel('Author')
+plt.legend(title='Newsgroup', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+
+# Save the figure
+plt.savefig('images and tables/top_25_most_active_users_by_newsgroup.png')
+plt.show()
+```
+
+```{python Temporal Heatmap of Daily Activity by Newsgroup}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Convert 'Date.and.Time' to datetime and handle errors
+all_comments['Date.and.Time'] = pd.to_datetime(all_comments['Date.and.Time'], errors='coerce')
+
+# Check if there are any conversion issues and drop those rows
+all_comments = all_comments.dropna(subset=['Date.and.Time'])
+
+# Extract day of the week and hour
+all_comments['DayOfWeek'] = all_comments['Date.and.Time'].dt.day_name()
+all_comments['Hour'] = all_comments['Date.and.Time'].dt.hour
+
+# Group data by DayOfWeek and Hour for all newsgroups combined
+activity_data = all_comments.groupby(['DayOfWeek', 'Hour']).size().reset_index(name='Activity')
+
+# Pivot table to prepare data for heatmap
+heatmap_data = activity_data.pivot_table(index='Hour', columns='DayOfWeek', values='Activity', fill_value=0)
+
+# Reorder days of the week for consistent display
+day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+heatmap_data = heatmap_data[day_order]
+
+# Create the heatmap
+plt.figure(figsize=(12, 8))
+sns.heatmap(heatmap_data, cmap='viridis')
+plt.title('Daily Activity Heatmap Across All Newsgroups')
+plt.xlabel('Day of Week')
+plt.ylabel('Hour of Day')
+plt.tight_layout()
+plt.savefig('images and tables/combined_daily_activity_heatmap.png')
+plt.show()
+```
+
+```{python Word Clouds!}
+import pandas as pd
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from nltk.corpus import stopwords
+import nltk
+
+# Ensure NLTK stopwords are downloaded
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+# Combine all text data into one string for all comments
+all_text = " ".join(all_comments['Full.Text'].dropna())
+
+# Create word cloud for all comments
+wordcloud_all = WordCloud(width=800, height=400, background_color='white', stopwords=stop_words, collocations=False).generate(all_text)
+
+plt.figure(figsize=(10, 6))
+plt.imshow(wordcloud_all, interpolation='bilinear')
+plt.axis('off')
+plt.title('Most Common Words in All Usenet Comments')
+plt.tight_layout()
+plt.savefig('images and tables/word_cloud_all_comments.png')
+plt.show()
+
+# Generate word clouds by newsgroup
+for newsgroup in all_comments['newsgroup'].unique():
+    # Filter comments for the current newsgroup
+    group_text = " ".join(all_comments[all_comments['newsgroup'] == newsgroup]['Full.Text'].dropna())
+    
+    # Create word cloud for the specific newsgroup
+    wordcloud_group = WordCloud(width=800, height=400, background_color='white', stopwords=stop_words, collocations=False).generate(group_text)
+    
+    plt.figure(figsize=(10, 6))
+    plt.imshow(wordcloud_group, interpolation='bilinear')
+    plt.axis('off')
+    plt.title(f'Most Common Words in {newsgroup}')
+    plt.tight_layout()
+    plt.savefig(f'images and tables/word_cloud_{newsgroup}.png')
+    plt.show()
+```
+
+```{python Growth of Newsgroups Over Time}
+# Convert Date to datetime format
+all_threads['Date'] = pd.to_datetime(all_threads['Date'])
+
+# Calculate cumulative count of newsgroups created over time
+plt.figure(figsize=(10, 6))
+all_threads.groupby(all_threads['Date'].dt.to_period('M')).newsgroup.nunique().cumsum().plot(kind='line')
+plt.title('Growth of Newsgroups Over Time')
+plt.xlabel('Month')
+plt.ylabel('Cumulative Number of Newsgroups')
+plt.tight_layout()
+plt.savefig('images and tables/growth_of_newsgroups_over_time.png')
+plt.show()
+```
+
+```{python Author Engagement Scatter Plot}
+# Calculate number of comments and threads per author
+author_stats = all_comments.groupby('Author').agg({'Thread.ID': pd.Series.nunique, 'Unique_CommentID': 'count'}).reset_index()
+author_stats.columns = ['Author', 'Threads_Initiated', 'Comments_Made']
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=author_stats, x='Threads_Initiated', y='Comments_Made', alpha=0.6)
+plt.title('Author Engagement: Comments Made vs. Threads Initiated')
+plt.xlabel('Number of Threads Initiated')
+plt.ylabel('Number of Comments Made')
+plt.tight_layout()
+plt.savefig('images and tables/author_engagement_scatterplot.png')
+plt.show()
+```
+
+# Sentiment Visualizations
+```{python Average Sentiment Over Time Across All Newsgroups}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Ensure 'Date' is in datetime format
+all_comments['Date'] = pd.to_datetime(all_comments['Date'])
+
+# Group by month and calculate average sentiment
+sentiment_over_time = all_comments.groupby(all_comments['Date'].dt.to_period('M'))['SentimentScore'].mean().reset_index()
+sentiment_over_time['Date'] = sentiment_over_time['Date'].dt.to_timestamp()
+
+plt.figure(figsize=(12, 6))
+plt.plot(sentiment_over_time['Date'], sentiment_over_time['SentimentScore'], marker='o', linestyle='-')
+plt.title('Average Sentiment Over Time Across All Newsgroups')
+plt.xlabel('Date')
+plt.ylabel('Average Sentiment Score')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_over_time.png')
+plt.show()
+```
+
+```{python Sentiment Distribution by Newsgroup Boxplot}
+import seaborn as sns
+
+plt.figure(figsize=(12, 6))
+sns.boxplot(x='newsgroup', y='SentimentScore', data=all_comments)
+plt.title('Sentiment Distribution by Newsgroup')
+plt.xlabel('Newsgroup')
+plt.ylabel('Sentiment Score')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_distribution_by_newsgroup.png')
+plt.show()
+```
+
+```{python Monthly Sentiment Heatmap by Newsgroup}
+# Group by newsgroup and month to calculate average sentiment
+monthly_sentiment = all_comments.groupby([all_comments['Date'].dt.to_period('M'), 'newsgroup'])['SentimentScore'].mean().reset_index()
+monthly_sentiment['Date'] = monthly_sentiment['Date'].dt.to_timestamp()
+
+# Pivot table for heatmap
+heatmap_data = monthly_sentiment.pivot('newsgroup', 'Date', 'SentimentScore')
+
+plt.figure(figsize=(12, 8))
+sns.heatmap(heatmap_data, cmap='coolwarm', center=0)
+plt.title('Monthly Sentiment Heatmap by Newsgroup')
+plt.xlabel('Month')
+plt.ylabel('Newsgroup')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/monthly_sentiment_heatmap.png')
+plt.show()
+```
+
+```{python Sentiment Score Over Time by Newsgroup}
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Ensure 'Date' is in datetime format
+all_comments['Date'] = pd.to_datetime(all_comments['Date'])
+
+# Group by month and newsgroup to calculate average sentiment
+sentiment_by_newsgroup = all_comments.groupby([all_comments['Date'].dt.to_period('M'), 'newsgroup'])['SentimentScore'].mean().reset_index()
+sentiment_by_newsgroup['Date'] = sentiment_by_newsgroup['Date'].dt.to_timestamp()
+
+plt.figure(figsize=(14, 8))
+sns.lineplot(data=sentiment_by_newsgroup, x='Date', y='SentimentScore', hue='newsgroup', marker='o')
+plt.title('Average Sentiment Over Time by Newsgroup')
+plt.xlabel('Date')
+plt.ylabel('Average Sentiment Score')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_over_time_by_newsgroup.png')
+plt.show()
+```
+
+```{python Sentiment Polarity Distribution (Positive vs. Negative)}
+# Define positive and negative sentiment based on threshold
+positive_threshold = 0
+all_comments['SentimentPolarity'] = all_comments['SentimentScore'].apply(lambda x: 'Positive' if x > positive_threshold else 'Negative')
+
+plt.figure(figsize=(8, 6))
+sns.countplot(data=all_comments, x='SentimentPolarity', palette=['red', 'green'])
+plt.title('Sentiment Polarity Distribution')
+plt.xlabel('Sentiment Polarity')
+plt.ylabel('Number of Comments')
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_polarity_distribution.png')
+plt.show()
+```
+
+```{python Sentiment Trend Analysis with Rolling Average}
+# Calculate rolling average of sentiment over time
+all_comments['RollingSentiment'] = all_comments['SentimentScore'].rolling(window=30, min_periods=1).mean()
+
+plt.figure(figsize=(12, 6))
+plt.plot(all_comments['Date'], all_comments['RollingSentiment'], color='purple')
+plt.title('Sentiment Trend Analysis with Rolling Average')
+plt.xlabel('Date')
+plt.ylabel('Rolling Average Sentiment Score (30-day window)')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('images and tables/sentiment_trend_rolling_average.png')
+plt.show()
+```
+
+```{python Top Words Associated with Positive and Negative Sentiments}
+from wordcloud import WordCloud
+
+# Separate positive and negative comments
+positive_comments = " ".join(all_comments[all_comments['SentimentPolarity'] == 'Positive']['Full.Text'].dropna())
+negative_comments = " ".join(all_comments[all_comments['SentimentPolarity'] == 'Negative']['Full.Text'].dropna())
+
+# Create word cloud for positive sentiment
+wordcloud_positive = WordCloud(width=800, height=400, background_color='white', stopwords=stop_words, collocations=False).generate(positive_comments)
+
+plt.figure(figsize=(10, 6))
+plt.imshow(wordcloud_positive, interpolation='bilinear')
+plt.axis('off')
+plt.title('Top Words in Positive Sentiment Comments')
+plt.tight_layout()
+plt.savefig('images and tables/word_cloud_positive_sentiment.png')
+plt.show()
+
+# Create word cloud for negative sentiment
+wordcloud_negative = WordCloud(width=800, height=400, background_color='white', stopwords=stop_words, collocations=False).generate(negative_comments)
+
+plt.figure(figsize=(10, 6))
+plt.imshow(wordcloud_negative, interpolation='bilinear')
+plt.axis('off')
+plt.title('Top Words in Negative Sentiment Comments')
+plt.tight_layout()
+plt.savefig('images and tables/word_cloud_negative_sentiment.png')
+plt.show()
+```
+
+
+# Network Visualizations
+```{r Load R Libraries}
+# Load necessary libraries
+library(dplyr)
+library(tidyr)
+library(visNetwork)
+library(igraph)  # Needed for community detection
+library(RColorBrewer)  # For generating pastel colors
+```
+
+```{r Get Authors Metadata}
+# Step 1: Calculate basic metadata for each author
+metadata <- all_comments %>%
+  group_by(Author) %>%
+  summarize(
+    total_threads = n_distinct(Thread.ID),  # Count distinct threads per author
+    total_comments = n(),  # Total number of comments made by the author
+    threads_started = sum(Thread_Relative_CommentID == "CM00001", na.rm = TRUE),  # Number of threads started by the author
+    .groups = 'drop'
+  )
+
+# Step 2: Calculate comments per newsgroup for each author
+comments_per_newsgroup <- all_comments %>%
+  group_by(Author, newsgroup) %>%
+  summarize(total_comments_in_newsgroup = n(), .groups = 'drop')
+
+# Step 3: Pivot the newsgroup data to wide format to create separate columns for each newsgroup
+comments_per_newsgroup_wide <- comments_per_newsgroup %>%
+  pivot_wider(
+    names_from = newsgroup,
+    values_from = total_comments_in_newsgroup,
+    values_fill = list(total_comments_in_newsgroup = 0)  # Fill missing values with 0
+  )
+
+# Step 4: Merge the metadata with the wide format newsgroup data
+metadata <- metadata %>%
+  left_join(comments_per_newsgroup_wide, by = "Author")
+
+# Step 5: Calculate author influence based on the number of connections in the network
+# Calculate the degree (number of connections) for each author in the graph
+edges <- all_comments %>%
+  filter(Thread.ID != "") %>%
+  group_by(Thread.ID) %>%
+  filter(n() > 1) %>%
+  summarize(edgelist = list(combn(Author, 2, simplify = FALSE))) %>%
+  unnest(edgelist) %>%
+  unnest_wider(edgelist, names_sep = "") %>%
+  rename(source = edgelist1, target = edgelist2) %>%
+  filter(source != target) %>%
+  group_by(source, target) %>%
+  summarize(weight = n(), .groups = 'drop')
+
+# Create graph object
+graph <- igraph::graph_from_data_frame(edges, directed = FALSE)
+
+# Calculate the degree for each author as their influence
+author_influence <- data.frame(
+  Author = igraph::V(graph)$name,
+  influence = igraph::degree(graph)
+)
+
+# Step 6: Merge author influence into metadata
+metadata <- metadata %>%
+  left_join(author_influence, by = "Author")
+
+# Step 7: Perform community detection using Louvain algorithm
+communities <- cluster_louvain(graph)
+membership <- membership(communities)
+
+# Step 8: Create node_communities DataFrame
+node_communities <- data.frame(
+  name = V(graph)$name,  # Node names (authors)
+  community = membership  # Community assignment
+)
+
+# Step 9: Sort the metadata DataFrame by total_comments in descending order
+metadata <- metadata %>%
+  arrange(desc(total_comments))
+
+# Preview the updated metadata dataframe
+print(metadata)
+print(node_communities)  # Display node communities
+```
+
+```{r Create Edges and Nodes}
+# Create top_authors list for the top 15 authors by influence
+top_authors <- metadata %>%
+  arrange(desc(influence)) %>%
+  slice(1:20) %>%
+  pull(Author)
+
+# Filter metadata and comments data for only top authors
+metadata <- metadata %>%
+  filter(Author %in% top_authors)
+
+comments_per_newsgroup_wide <- comments_per_newsgroup_wide %>%
+  filter(Author %in% top_authors)
+
+# Step 10: Create Edges and Nodes for the visualization
+
+# Filter edges to include only those involving top authors
+edges <- edges %>%
+  filter(source %in% top_authors & target %in% top_authors)
+
+# Prepare nodes data
+nodes <- data.frame(
+  name = top_authors,
+  size = author_influence$influence[match(top_authors, author_influence$Author)],
+  label = top_authors
+)
+
+# Merge nodes with their community data
+nodes <- nodes %>%
+  left_join(node_communities, by = "name")
+
+# Add metadata and newsgroup comments in descending order to the title
+nodes <- nodes %>%
+  mutate(
+    # Calculate the newsgroup comments section dynamically
+    comments_per_newsgroup = sapply(name, function(author_name) {
+      author_data <- comments_per_newsgroup_wide %>%
+        filter(Author == author_name) %>%
+        select(-Author) %>%
+        pivot_longer(cols = everything(), names_to = "newsgroup", values_to = "comments") %>%
+        arrange(desc(comments))
+      
+      paste(author_data$newsgroup, author_data$comments, sep = ": ", collapse = "<br>")
+    }),
+    
+    # Prepare the title with the formatted metadata and comments per newsgroup
+    title = paste0(
+      "<div style='background-color: #f2f2f2; border: 2px solid #666666; padding: 5px;'>",  # Custom tooltip styling
+      "<strong>", name, "</strong><br>",
+      "Total Threads Participated: ", metadata$total_threads[match(name, metadata$Author)], "<br>",
+      "Total Comments: ", metadata$total_comments[match(name, metadata$Author)], "<br>",
+      "Threads Started: ", metadata$threads_started[match(name, metadata$Author)], "<br>",
+      "Influence: ", metadata$influence[match(name, metadata$Author)], " (based on the number of connections)", "<br><br>",
+      "<strong>Comments per Newsgroup</strong><br>",
+      comments_per_newsgroup,
+      "</div>"  # End of custom tooltip styling
+    )
+  )
+
+# Identify current min and max sizes for nodes
+current_min <- min(nodes$size, na.rm = TRUE)
+current_max <- max(nodes$size, na.rm = TRUE)
+
+# Define new desired range for node sizes
+new_min <- 15  # Minimum size
+new_max <- 30  # Maximum size
+
+# Apply Min-Max scaling to the 'size' column
+nodes <- nodes %>%
+  mutate(
+    size = ((size - current_min) / (current_max - current_min)) * (new_max - new_min) + new_min
+  )
+
+nodes
+edges
+summary(nodes)
+summary(edges)
+```
+
+```{r Visualize the Graph}
+# Libraries
+library(dplyr)
+library(tidyr)
+library(visNetwork)
+library(igraph)  # Needed for community detection
+library(RColorBrewer)  # For generating pastel colors
+
+# Convert node names to zero-based indices
+nodes <- nodes %>%
+  mutate(id = 0:(n() - 1))  # Create a new 'id' column for nodes
+
+# Convert 'source' and 'target' in edges to indices using the 'name' to 'id' mapping
+edges <- edges %>%
+  mutate(
+    from = match(source, nodes$name) - 1,  # Zero-based index
+    to = match(target, nodes$name) - 1     # Zero-based index
+  )
+
+# Automatically assign colors to communities using RColorBrewer
+num_communities <- length(unique(node_communities$community))
+colors <- brewer.pal(min(num_communities, 9), "Set1")  # Use Set1 palette for distinct colors
+
+# If you have more than 9 communities and need more colors, you can create a larger palette
+# by repeating or expanding the Set1 palette
+if (num_communities > 9) {
+  colors <- colorRampPalette(brewer.pal(9, "Set1"))(num_communities)
+}
+# Merge nodes with their community data and assign colors automatically
+nodes <- nodes %>%
+  mutate(color = colors[community])
+
+# Create a network visualization with a force-directed layout
+network_graph <- visNetwork(nodes, edges, width = "100vw", height = "100vh") %>%
+  visNodes(
+    size = nodes$size * 5,
+    font = list(size = 15),
+    color = list(
+      border = "black",
+      highlight = "red"
+    ),
+    title = nodes$title  # Use the title for hover popups
+  ) %>%
+  visEdges(
+    width = ~weight,
+    color = list(color = 'gray', highlight = 'red'),
+    smooth = list(enabled = TRUE, type = "dynamic", roundness = 0.5)  # Enable smooth dynamic edges with medium roundness
+  ) %>%
+  visOptions(
+    highlightNearest = list(enabled = TRUE, hover = TRUE),
+    nodesIdSelection = list(enabled = TRUE)
+  ) %>%
+  visPhysics(
+    stabilization = TRUE,
+    solver = "barnesHut",
+    barnesHut = list(gravitationalConstant = -8000, springLength = 100, springConstant = 0.01)
+  ) %>%
+  visInteraction(
+    dragNodes = TRUE,
+    dragView = TRUE,
+    zoomView = TRUE
+  ) %>%
+  visLayout(
+    improvedLayout = TRUE
+  )
+
+# Display the network graph in the RStudio Viewer
+network_graph
+
+# Save the network graph to an HTML file with full width and height
+visSave(network_graph, file = "Images and Tables/network_graph.html")
+
+# Step 4: Add the custom legend directly into the HTML file after it is saved
+html_legend <- '
+<div style="position: absolute; bottom: 20px; right: 20px; background-color: white; border: 1px solid #666; padding: 10px; border-radius: 5px; font-family: Arial, sans-serif;">
+  <div style="margin-bottom: 5px;"><strong>Color</strong> = Community (Louvain)</div>
+  <div><strong>Node Size</strong> = Influence</div>
+</div>
+'
+
+# Inject the legend into the HTML file
+html_file <- "Images and Tables/network_graph.html"
+html_content <- readLines(html_file)
+html_content <- c(html_content, html_legend)
+writeLines(html_content, html_file)
+```
+
+
+
