@@ -53,8 +53,8 @@
         <p>While network analysis is not the sole focus of my project, the following pages on this site are designed to highlight the quantitative methodology I employed. From a detailed guide on the Python script I developed and instructions on how to use it, to an overview of what the data reveals about the newsgroups I’ve been studying, these resources aim to provide a deeper understanding of both the technical and thematic dimensions of this research.</p>
 
         <div class="button-group">
-            <a href="index.html"><button>Back</button></a>
-            <a href="page3.html"><button>Next</button></a>
+            <a href="Site Pages/index.html"><button>Back</button></a>
+            <a href="Site Pages/page3.html"><button>Next</button></a>
         </div>
 
         <div class="footnote">
@@ -64,7 +64,7 @@
     </div>
 
     <script>
-        fetch('menu.html')
+        fetch('Site Pages/menu.html')
             .then(response => response.text())
             .then(data => {
                 document.getElementById('menu-container').innerHTML = data;

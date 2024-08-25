@@ -56,11 +56,11 @@
         <p>For more work from me, check out my website: <a href="http://evjohnston.com" target="_blank">evjohnston.com</a></p>
 
         <div class="next-button">
-            <a href="page2.html"><button>Next</button></a>
+            <a href="Site Pages/page2.html"><button>Next</button></a>
         </div>
     </div>
     <script>
-        fetch('menu.html')
+        fetch('Site Pages/menu.html')
             .then(response => response.text())
             .then(data => {
                 document.getElementById('menu-container').innerHTML = data;
