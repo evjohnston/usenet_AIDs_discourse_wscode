@@ -59,7 +59,7 @@ def process_csv(input_csv_path):
     # Determine the output CSV file name
     base_name = os.path.basename(input_csv_path)
     output_base_name = base_name.replace('_threads', '_comments')
-    output_directory = '/Users/emerson/Github/usenet_early_histories_project/CSV Files/Comments/'
+    output_directory = '/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/'
     output_csv_path = os.path.join(output_directory, output_base_name)
 
     # Iterate over each URL and collect comments
@@ -80,5 +80,5 @@ def process_csv(input_csv_path):
     print(f"Comments successfully saved to {output_csv_path}")
 
 # Example usage with the provided file path
-input_csv_path = '/Users/emerson/Github/usenet_early_histories_project/CSV Files/Thread/netnews_threads.csv'  # Replace with your actual path
+input_csv_path = '/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Thread/netnews_threads.csv'  # Replace with your actual path
 process_csv(input_csv_path)

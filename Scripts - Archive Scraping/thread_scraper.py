@@ -29,7 +29,7 @@ def main():
     csv_filename = f"{newsgroup}_threads.csv"
 
     # Ensure the output directory exists
-    output_directory = '/Users/emerson/Github/usenet_early_histories_project/CSV Files/Threads'
+    output_directory = '/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads'
     os.makedirs(output_directory, exist_ok=True)
 
     # Determine the full output file path

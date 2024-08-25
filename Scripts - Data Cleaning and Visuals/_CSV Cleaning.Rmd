@@ -56,7 +56,7 @@ write.csv(all_comments, file.path(comments_directory, "combined_comments.csv"), 
 ## Reset
 ```{r}
 rm(list = ls()) 
-setwd("/Users/emerson/Github/usenet_early_histories_project")
+setwd("/Users/emerson/Github/usenet_AIDs_discourses_webpage")
 ```
 
 ## Loading Libraries
