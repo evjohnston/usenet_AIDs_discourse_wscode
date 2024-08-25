@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .hamburger-menu div {
+            width: 30px;
+            height: 3px;
+            background-color: black;
+            margin: 4px 0;
+        }
+        .menu-items {
+            display: none;
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .menu-items a {
+            display: block;
+            padding: 8px;
+            text-decoration: none;
+            color: black;
+        }
+        .menu-items a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="hamburger-menu" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div class="menu-items" id="menuItems">
+        <a href="index.html">Home Page</a>
+        <a href="page2.html">About Usenet</a>
+        <a href="page3.html">Python Script Guide</a>
+        <a href="page4.html">Data Analysis</a>
+        <a href="page5.html">Resources and Further Reading</a>
+        <a href="page6.html">Contact and About Me</a>
+    </div>
+</body>
+</html>
+<script>
+    function toggleMenu() {
+        var menu = document.getElementById('menuItems');
+        if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'block';
+        }
+    }
+</script>
