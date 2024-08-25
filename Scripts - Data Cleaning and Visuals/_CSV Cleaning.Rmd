@@ -8,20 +8,21 @@ output:
   pdf_document: default
 ---
 
-# Old Read and Merge (DONT RUN)
-netmed_threads <- read.csv("CSV Files/Threads/netmed_threads.csv")
-netmotss_threads <- read.csv("CSV Files/Threads/netmotss_threads.csv")
-netnews_threads <- read.csv("CSV Files/Threads/netnews_threads.csv")
-netpolitics_threads <- read.csv("CSV Files/Threads/netpolitics_threads.csv")
-netreligion_threads <- read.csv("CSV Files/Threads/netreligion_threads.csv")
-netsingles_threads <- read.csv("CSV Files/Threads/netsingles_threads.csv")
 
-netmed_comments <- read.csv("CSV Files/Comments/netmed_comments.csv")
-netmotss_comments <- read.csv("CSV Files/Comments/netmotss_comments.csv")
-netnews_comments <- read.csv("CSV Files/Comments/netnews_comments.csv")
-netpolitics_comments <- read.csv("CSV Files/Comments/netpolitics_comments.csv")
-netreligion_comments <- read.csv("CSV Files/Comments/netreligion_comments.csv")
-netsingles_comments <- read.csv("CSV Files/Comments/netsingles_comments.csv")
+```{r Old Read and Merge, eval=FALSE, include=FALSE}
+netmed_threads <- read.csv(file.path(threads_directory, "netmed_threads.csv")
+netmotss_threads <- read.csv(file.path(threads_directory, "netmotss_threads.csv")
+netnews_threads <- read.csv(file.path(threads_directory, "netnews_threads.csv")
+netpolitics_threads <- read.csv(file.path(threads_directory, "netpolitics_threads.csv")
+netreligion_threads <- read.csv(file.path(threads_directory, "netreligion_threads.csv")
+netsingles_threads <- read.csv(file.path(threads_directory, "netsingles_threads.csv")
+
+netmed_comments <- read.csv(file.path(comments_directory, "netmed_comments.csv")
+netmotss_comments <- read.csv(file.path(comments_directory, "netmotss_comments.csv")
+netnews_comments <- read.csv(file.path(comments_directory, "netnews_comments.csv")
+netpolitics_comments <- read.csv(file.path(comments_directory, "netpolitics_comments.csv")
+netreligion_comments <- read.csv(file.path(comments_directory, "netreligion_comments.csv")
+netsingles_comments <- read.csv(file.path(comments_directory, "netsingles_comments.csv")
 
 netmed_threads$newsgroup <- "netmed"
 netmotss_threads$newsgroup <- "netmotss"
@@ -46,20 +47,14 @@ comments_directory <- "CSV Files/Comments"
 
 write.csv(all_threads, file.path(threads_directory, "combined_threads.csv"), row.names = FALSE)
 write.csv(all_comments, file.path(comments_directory, "combined_comments.csv"), row.names = FALSE)
----
-
----
-
-
-# Maintainence
-
-## Reset
-```{r}
-rm(list = ls()) 
-setwd("/Users/emerson/Github/usenet_AIDs_discourses_webpage")
 ```
 
-## Maintenance
+# Maintainence
+```{r Reset and Set Working Directory}
+rm(list = ls()) 
+knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_AIDs_discourses_webpage')
+```
+
 ```{r Load LIbraries, Directories, and Datasets}
 # Load Libraries
 library(tidyverse)
@@ -146,78 +141,6 @@ write.csv(all_threads, file.path(threads_directory, "combined_threads_cleaned.cs
 write.csv(all_comments, file.path(comments_directory, "combined_comments_cleaned.csv"), row.names = FALSE)
 ```
 
-# Additional Filtering
-```{r Filter by Keyword}
-# List of extended keywords and phrases
-keywords <- c("aids", "hiv", "acquired immune deficiency syndrome", "human immunodeficiency virus",
-              "gay plague", "gay cancer", "kaposi's sarcoma", "pneumocystis pneumonia",
-              "homosexual disease", "gay disease", "gay fear", "fear of gay", "fear of homosexual",
-              "sexual orientation disease")
-
-# Function to flag comments with keywords
-flag_keywords <- function(text) {
-  # Convert text to lowercase
-  text <- tolower(text)
-  # Check if any keyword is present
-  grepl(paste(keywords, collapse = "|"), text)
-}
-
-# Add a column to indicate if the comment contains any keyword
-all_comments <- all_comments %>%
-  mutate(Contains_Keyword = flag_keywords(Full.Text))
-
-# Identify threads with at least one comment containing a keyword
-threads_with_keywords <- all_comments %>%
-  filter(Contains_Keyword) %>%
-  distinct(Thread.ID) %>%
-  pull(Thread.ID)
-
-# Filter comments in threads with at least one keyword
-comments_in_keyword_threads <- all_comments %>%
-  filter(Thread.ID %in% threads_with_keywords)
-
-# Group by newsgroup and calculate required statistics
-keywords_summary_df <- comments_in_keyword_threads %>%
-  group_by(newsgroup) %>%
-  summarize(
-    Comments_with_Keywords = sum(Contains_Keyword),
-    Conversations_Mentioned_In = n_distinct(Thread.ID),
-    Total_Comments_In_Threads = n(),
-    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100
-  )
-
-# Add a totals row
-totals <- keywords_summary_df %>%
-  summarize(
-    newsgroup = "Total",
-    Comments_with_Keywords = sum(Comments_with_Keywords),
-    Conversations_Mentioned_In = sum(Conversations_Mentioned_In),
-    Total_Comments_In_Threads = sum(Total_Comments_In_Threads),
-    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100
-  )
-
-# Combine the summary with the totals row
-keywords_summary_df <- bind_rows(keywords_summary_df, totals)
-
-# Print the keyword summary data frame with totals
-print(keywords_summary_df)
-```
-
-```{r Save Keyword CSVs to File}
-# Collect all related threads and comments
-related_threads <- all_threads %>%
-  filter(Unique_ThreadID %in% threads_with_keywords) %>%
-  filter(Date <= as.Date("1988-12-31")) 
-
-related_comments <- all_comments %>%
-  filter(Thread.ID %in% threads_with_keywords) %>%
-  filter(Date <= as.Date("1988-12-31")) 
-
-# Write the related threads and comments to CSV files
-write.csv(related_threads, file.path(threads_directory, "aids_related_threads.csv"), row.names = FALSE)
-write.csv(related_comments, file.path(comments_directory, "aids_related_comments.csv"), row.names = FALSE)
-```
-
 # Table and Figures
 ```{r Descriptive Statistics}
 # Calculate statistics using dplyr
@@ -246,5 +169,100 @@ totals <- summary_df %>%
 summary_df <- bind_rows(summary_df, totals)
 
 # Print the summary data frame with totals
-tab_df(summary_df, file = paste0(output_directory, "Images and Tables/descriptive_statistics_table.html"))
+tab_df(summary_df, file = paste0(output_directory, "images and tables/descriptive_statistics_table.html"))
+```
+
+# Additional Filtering
+```{r Filter by Keyword and Add Relevancy Scores}
+# List of refined keywords and phrases (broad keywords removed)
+keywords <- c("aids", "htlv", "hiv", "acquired immune deficiency syndrome", "human immunodeficiency virus",
+              "gay plague", "gay cancer", "kaposi's sarcoma", "pneumocystis pneumonia",
+              "homosexual disease", "gay disease", "gay fear", "fear of gay", "fear of homosexual",
+              "sexual orientation disease", "virus", "sex", "promiscuity", "patients")
+
+# Function to calculate relevancy score
+calculate_relevancy <- function(text) {
+  # Convert text to lowercase
+  text <- tolower(text)
+  # Check for the presence of each keyword
+  keyword_matches <- sapply(keywords, function(keyword) grepl(keyword, text))
+  # Calculate relevancy score as the number of keywords present
+  relevancy_score <- sum(keyword_matches)
+  return(relevancy_score)
+}
+
+# Step 1: Identify threads with at least one comment containing a keyword
+all_comments_aids <- all_comments %>%
+  rowwise() %>%
+  mutate(Contains_Keyword = any(sapply(keywords, function(keyword) grepl(keyword, tolower(Full.Text)))))
+
+# Filter threads containing at least one keyword
+all_threads_aids <- all_comments_aids %>%
+  filter(Contains_Keyword) %>%
+  distinct(Thread.ID)
+
+# Step 2: Fetch all comments from threads with at least one keyword-containing comment
+comments_in_keyword_threads <- all_comments %>%
+  filter(Thread.ID %in% all_threads_aids$Thread.ID)
+
+# Step 3: Calculate relevancy score for each comment and add it to the dataframe
+comments_in_keyword_threads <- comments_in_keyword_threads %>%
+  rowwise() %>%
+  mutate(Relevancy = calculate_relevancy(Full.Text))
+
+# Save the comments dataframe to CSV
+write.csv(comments_in_keyword_threads, file.path(comments_directory, "aids_related_comments.csv"), row.names = FALSE)
+
+# Step 4: Calculate the average relevancy score for each thread
+thread_relevancy_scores <- comments_in_keyword_threads %>%
+  group_by(Thread.ID) %>%
+  summarize(Thread_Relevancy = mean(Relevancy, na.rm = TRUE))
+
+# Merge thread relevancy scores back to thread-level dataframe
+threads_summary_df <- comments_in_keyword_threads %>%
+  distinct(Thread.ID, newsgroup) %>%
+  left_join(thread_relevancy_scores, by = "Thread.ID")
+
+# Save the threads dataframe to CSV
+write.csv(threads_summary_df, file.path(threads_directory, "aids_related_threads.csv"), row.names = FALSE)
+```
+
+```{r Keyword Descriptive Statistics}
+# Step 5: Group by newsgroup and calculate required statistics, including thread relevancy
+keywords_summary_df <- comments_in_keyword_threads %>%
+  group_by(newsgroup) %>%
+  summarize(
+    Comments_with_Keywords = sum(Relevancy > 0),
+    Conversations_Mentioned_In = n_distinct(Thread.ID),
+    Total_Comments_In_Threads = n(),
+    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
+    Average_Relevancy_Score = mean(Relevancy, na.rm = TRUE)
+  )
+
+# Merge thread relevancy averages back to the summary dataframe
+threads_summary_df_grouped <- threads_summary_df %>%
+  group_by(newsgroup) %>%
+  summarize(Average_Thread_Relevancy = mean(Thread_Relevancy, na.rm = TRUE))
+
+# Combine comment and thread summaries
+keywords_summary_df <- keywords_summary_df %>%
+  left_join(threads_summary_df_grouped, by = "newsgroup")
+
+# Add a totals row
+totals <- keywords_summary_df %>%
+  summarize(
+    newsgroup = "Total",
+    Comments_with_Keywords = sum(Comments_with_Keywords),
+    Conversations_Mentioned_In = sum(Conversations_Mentioned_In),
+    Total_Comments_In_Threads = sum(Total_Comments_In_Threads),
+    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
+    Average_Relevancy_Score = mean(Average_Relevancy_Score, na.rm = TRUE),
+    Average_Thread_Relevancy = mean(Average_Thread_Relevancy, na.rm = TRUE)
+  )
+
+# Combine the summary with the totals row
+keywords_summary_df <- bind_rows(keywords_summary_df, totals)
+
+# Print the keyword summary data frame with totals
+tab_df(keywords_summary_df, file = paste0(output_directory, "images and tables/aids_descriptive_statistics_table.html"))
 ```
