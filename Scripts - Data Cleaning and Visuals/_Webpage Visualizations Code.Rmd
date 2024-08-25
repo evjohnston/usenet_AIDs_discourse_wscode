@@ -8,14 +8,13 @@ output:
   pdf_document: default
 ---
 
-# Maintenance and Cleaning
+# Maintenance for R and Python
 ```{r Reset and Setup}
 rm(list = ls()) 
 knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_AIDs_discourses_webpage')
 ```
 
-```{r Import necessary R libraries}
-# Load all necessary libraries at once
+```{r R Load Libraries, Directories, and Datasets}
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
@@ -23,18 +22,41 @@ library(igraph)
 library(ggraph)
 library(tidytext)
 library(topicmodels)
-```
+library(visNetwork)
+library(RColorBrewer)  
 
-```{r R Define Directories and Read/Clean CSVs}
 # Load Directories
 output_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage"
 threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
 comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments"
 
 # Load the datasets
-all_threads <- read.csv(file.path(threads_directory, "combined_threads_cleaned.csv"))
-all_comments <- read.csv(file.path(comments_directory, "combined_comments_cleaned.csv"))
+all_threads <- read.csv(file.path(threads_directory, "aids_related_threads.csv"))
+all_comments <- read.csv(file.path(comments_directory, "aids_related_comments.csv"))
+```
 
+```{python Python Load Libraries, Directories, and Datasets}
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import networkx as nx
+import scipy
+
+# Define directories
+output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
+threads_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
+comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
+
+# Load the datasets with the correct file paths
+all_threads = pd.read_csv(os.path.join(threads_directory, "threads_cleaned_82TO89.csv"))
+all_comments = pd.read_csv(os.path.join(comments_directory, "comments_cleaned_82TO89.csv"))
+```
+
+```{r R CSV Cleaning}
 all_threads <- all_threads %>% drop_na()
 all_comments <- all_comments %>% drop_na()
 
@@ -53,30 +75,7 @@ write.csv(all_threads, file.path(threads_directory, "threads_cleaned_82TO89.csv"
 write.csv(all_comments, file.path(comments_directory, "comments_cleaned_82TO89.csv"), row.names = FALSE)
 ```
 
-```{python Import necessary Python libraries}
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-import networkx as nx
-import scipy
-```
-
-```{python Python Define Directories and Read CSVs}
-# Define directories
-output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
-threads_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
-comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
-
-# Load the datasets with the correct file paths
-all_threads = pd.read_csv(os.path.join(threads_directory, "threads_cleaned_82TO89.csv"))
-all_comments = pd.read_csv(os.path.join(comments_directory, "comments_cleaned_82TO89.csv"))
-```
-
-# Initial Visualizations
+# Initial Visualizations - Python
 ```{python Distribution of Comments per Newsgroup}
 plt.figure(figsize=(10, 6))
 sns.countplot(data=all_comments, x='newsgroup', order=all_comments['newsgroup'].value_counts().index)
@@ -274,7 +273,7 @@ plt.savefig(os.path.join(output_directory, "images and tables/author_engagement_
 plt.show()
 ```
 
-# Sentiment Visualizations
+# Sentiment Visualizations - Python
 ```{python Average Sentiment Over Time Across All Newsgroups}
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -415,16 +414,7 @@ plt.show()
 ```
 
 
-# Network Visualizations
-```{r Load R Libraries}
-# Load necessary libraries
-library(dplyr)
-library(tidyr)
-library(visNetwork)
-library(igraph)  # Needed for community detection
-library(RColorBrewer)  # For generating pastel colors
-```
-
+# Network Visualizations - R
 ```{r Get Authors Metadata}
 # Step 1: Calculate basic metadata for each author
 metadata <- all_comments %>%

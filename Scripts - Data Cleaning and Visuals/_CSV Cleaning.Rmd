@@ -55,7 +55,7 @@ rm(list = ls())
 knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_AIDs_discourses_webpage')
 ```
 
-```{r Load LIbraries, Directories, and Datasets}
+```{r Load Libraries, Directories, and Datasets}
 # Load Libraries
 library(tidyverse)
 library(readr)
@@ -218,10 +218,10 @@ thread_relevancy_scores <- comments_in_keyword_threads %>%
   group_by(Thread.ID) %>%
   summarize(Thread_Relevancy = mean(Relevancy, na.rm = TRUE))
 
-# Merge thread relevancy scores back to thread-level dataframe
-threads_summary_df <- comments_in_keyword_threads %>%
-  distinct(Thread.ID, newsgroup) %>%
-  left_join(thread_relevancy_scores, by = "Thread.ID")
+# Merge thread relevancy scores with the original all_threads dataframe and filter to keep only relevant threads
+threads_summary_df <- all_threads %>%
+  filter(Unique_ThreadID %in% all_threads_aids$Thread.ID) %>%
+  left_join(thread_relevancy_scores, by = c("Unique_ThreadID" = "Thread.ID"))
 
 # Save the threads dataframe to CSV
 write.csv(threads_summary_df, file.path(threads_directory, "aids_related_threads.csv"), row.names = FALSE)
