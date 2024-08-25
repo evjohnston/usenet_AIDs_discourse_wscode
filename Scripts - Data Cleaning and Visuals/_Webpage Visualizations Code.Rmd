@@ -398,7 +398,7 @@ plt.imshow(wordcloud_positive, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top Words in Positive Sentiment Comments')
 plt.tight_layout()
-0_output_path = os.path.join(output_directory, "images and tables/word_cloud_positive_sentiment.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_positive_sentiment.png"))
 plt.savefig(0_output_path)
 plt.show()
 
