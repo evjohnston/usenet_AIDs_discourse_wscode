@@ -25,14 +25,15 @@ library(tidytext)
 library(topicmodels)
 ```
 
-```{r R Read and Clean CSVs}
+```{r R Define Directories and Read/Clean CSVs}
 # Load Directories
+output_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage"
 threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
 comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments"
 
 # Load the datasets
-all_threads <- read.csv("/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/combined_threads_cleaned.csv")
-all_comments <- read.csv("/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/combined_comments_cleaned.csv")
+all_threads <- read.csv(file.path(threads_directory, "combined_threads_cleaned.csv"))
+all_comments <- read.csv(file.path(comments_directory, "combined_comments_cleaned.csv"))
 
 all_threads <- all_threads %>% drop_na()
 all_comments <- all_comments %>% drop_na()
@@ -53,6 +54,7 @@ write.csv(all_comments, file.path(comments_directory, "comments_cleaned_82TO89.c
 ```
 
 ```{python Import necessary Python libraries}
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -63,9 +65,15 @@ import networkx as nx
 import scipy
 ```
 
-```{python Python Read CSVs}
-all_comments = pd.read_csv("/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/comments_cleaned_82TO89.csv")
-all_threads = pd.read_csv("/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/threads_cleaned_82TO89.csv")
+```{python Python Define Directories and Read CSVs}
+# Define directories
+output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
+threads_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
+comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
+
+# Load the datasets with the correct file paths
+all_threads = pd.read_csv(os.path.join(threads_directory, "threads_cleaned_82TO89.csv"))
+all_comments = pd.read_csv(os.path.join(comments_directory, "comments_cleaned_82TO89.csv"))
 ```
 
 # Initial Visualizations
@@ -75,7 +83,7 @@ sns.countplot(data=all_comments, x='newsgroup', order=all_comments['newsgroup'].
 plt.title('Distribution of Comments per Newsgroup')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/distribution_of_comments_per_newsgroup.png')
+plt.savefig(os.path.join(output_directory, "images and tables/distribution_of_comments_per_newsgroup.png"))
 plt.show()
 ```
 
@@ -88,7 +96,7 @@ plt.title('Number of Threads Across All Newsgroups Over Time')
 plt.xlabel('Month')
 plt.ylabel('Number of Threads')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/number_of_threads_over_time.png')
+plt.savefig(os.path.join(output_directory, "images and tables/number_of_threads_over_time.png"))
 plt.show()
 ```
 
@@ -102,7 +110,7 @@ plt.xlabel('Newsgroup')
 plt.ylabel('Average Number of Comments')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/average_comments_per_thread_by_newsgroup.png')
+plt.savefig(os.path.join(output_directory, "images and tables/average_comments_per_thread_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -113,7 +121,7 @@ plt.title('Sentiment Score Distribution Across All Comments')
 plt.xlabel('Sentiment Score')
 plt.ylabel('Frequency')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_score_distribution_across_all_comments.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_score_distribution_across_all_comments.png"))
 plt.show()
 ```
 
@@ -151,7 +159,7 @@ plt.legend(title='Newsgroup', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 
 # Save the figure
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/top_25_most_active_users_by_newsgroup.png')
+plt.savefig(os.path.join(output_directory, "images and tables/top_25_most_active_users_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -187,7 +195,7 @@ plt.title('Daily Activity Heatmap Across All Newsgroups')
 plt.xlabel('Day of Week')
 plt.ylabel('Hour of Day')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/combined_daily_activity_heatmap.png')
+plt.savefig(os.path.join(output_directory, "images and tables/combined_daily_activity_heatmap.png"))
 plt.show()
 ```
 
@@ -197,6 +205,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import nltk
+import os
 
 # Ensure NLTK stopwords are downloaded
 nltk.download('stopwords')
@@ -213,7 +222,7 @@ plt.imshow(wordcloud_all, interpolation='bilinear')
 plt.axis('off')
 plt.title('Most Common Words in All Usenet Comments')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/word_cloud_all_comments.png')
+plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_all_comments.png"))
 plt.show()
 
 # Generate word clouds by newsgroup
@@ -227,9 +236,11 @@ for newsgroup in all_comments['newsgroup'].unique():
     plt.figure(figsize=(10, 6))
     plt.imshow(wordcloud_group, interpolation='bilinear')
     plt.axis('off')
-    plt.title(f'Most Common Words in {newsgroup}')
+    plt.title(f'Most common words in {newsgroup}')
     plt.tight_layout()
-    plt.savefig(f'/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/word_cloud_{newsgroup}.png')
+    
+    # Use f-string to save the file with the specific newsgroup name
+    plt.savefig(os.path.join(output_directory, f"images and tables/word_cloud_{newsgroup}.png"))
     plt.show()
 ```
 
@@ -244,7 +255,7 @@ plt.title('Growth of Newsgroups Over Time')
 plt.xlabel('Month')
 plt.ylabel('Cumulative Number of Newsgroups')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/growth_of_newsgroups_over_time.png')
+plt.savefig(os.path.join(output_directory, "images and tables/growth_of_newsgroups_over_time.png"))
 plt.show()
 ```
 
@@ -259,7 +270,7 @@ plt.title('Author Engagement: Comments Made vs. Threads Initiated')
 plt.xlabel('Number of Threads Initiated')
 plt.ylabel('Number of Comments Made')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/author_engagement_scatterplot.png')
+plt.savefig(os.path.join(output_directory, "images and tables/author_engagement_scatterplot.png"))
 plt.show()
 ```
 
@@ -282,7 +293,7 @@ plt.xlabel('Date')
 plt.ylabel('Average Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_over_time.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_over_time.png"))
 plt.show()
 ```
 
@@ -296,7 +307,7 @@ plt.xlabel('Newsgroup')
 plt.ylabel('Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_distribution_by_newsgroup.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_distribution_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -315,7 +326,7 @@ plt.xlabel('Month')
 plt.ylabel('Newsgroup')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/monthly_sentiment_heatmap.png')
+plt.savefig(os.path.join(output_directory, "images and tables/monthly_sentiment_heatmap.png"))
 plt.show()
 ```
 
@@ -338,7 +349,7 @@ plt.xlabel('Date')
 plt.ylabel('Average Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_over_time_by_newsgroup.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_over_time_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -353,7 +364,7 @@ plt.title('Sentiment Polarity Distribution')
 plt.xlabel('Sentiment Polarity')
 plt.ylabel('Number of Comments')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_polarity_distribution.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_polarity_distribution.png"))
 plt.show()
 ```
 
@@ -368,7 +379,7 @@ plt.xlabel('Date')
 plt.ylabel('Rolling Average Sentiment Score (30-day window)')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/sentiment_trend_rolling_average.png')
+plt.savefig(os.path.join(output_directory, "images and tables/sentiment_trend_rolling_average.png"))
 plt.show()
 ```
 
@@ -387,7 +398,8 @@ plt.imshow(wordcloud_positive, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top Words in Positive Sentiment Comments')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/word_cloud_positive_sentiment.png')
+0_output_path = os.path.join(output_directory, "images and tables/word_cloud_positive_sentiment.png"))
+plt.savefig(0_output_path)
 plt.show()
 
 # Create word cloud for negative sentiment
@@ -398,7 +410,7 @@ plt.imshow(wordcloud_negative, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top Words in Negative Sentiment Comments')
 plt.tight_layout()
-plt.savefig('/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/word_cloud_negative_sentiment.png')
+plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_negative_sentiment.png"))
 plt.show()
 ```
 
@@ -636,7 +648,8 @@ network_graph <- visNetwork(nodes, edges, width = "100vw", height = "100vh") %>%
 network_graph
 
 # Save the network graph to an HTML file with full width and height
-visSave(network_graph, file = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/network_graph.html")
+network_graph_path <- file.path(output_directory, "images and tables/network_graph.html")
+visSave(network_graph, file = network_graph_path)
 
 # Step 4: Add the custom legend directly into the HTML file after it is saved
 html_legend <- '
@@ -647,10 +660,9 @@ html_legend <- '
 '
 
 # Inject the legend into the HTML file
-html_file <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/images and tables/network_graph.html"
-html_content <- readLines(html_file)
+html_content <- readLines(network_graph_path)
 html_content <- c(html_content, html_legend)
-writeLines(html_content, html_file)
+writeLines(html_content, network_graph_path)
 ```
 
 

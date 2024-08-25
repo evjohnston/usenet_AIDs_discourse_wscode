@@ -72,12 +72,12 @@ library(htmltools)
 library(dplyr)
 
 # Load Directories
-threads_directory <- "CSV Files/Threads"
-comments_directory <- "CSV Files/Comments"
+threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
+comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
 
 # Load the datasets
-all_threads <- read.csv("CSV Files/Threads/combined_threads.csv")
-all_comments <- read.csv("CSV Files/Comments/combined_comments.csv")
+all_threads <- read.csv(file.path(threads_directory, "combined_threads.csv"))
+all_comments <- read.csv(file.path(comments_directory, "combined_comments.csv"))
 
 # Assign unique identifiers to newsgroups
 newsgroup_ids <- c("netmed" = "NG01", "netmotss" = "NG02", "netnews" = "NG03",
