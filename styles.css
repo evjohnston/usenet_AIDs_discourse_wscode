@@ -31,7 +31,7 @@ body {
     padding-left: 100px; /* Adds padding to avoid overlap with the menu */
     padding-right: 100px; /* Adds padding to avoid overlap with the menu */
     padding-top: 50px; /* Adjust this value to ensure the buttons do not overlap with the content */
-    padding-bottom: 400px; /* Adds padding at the bottom of the page */
+    padding-bottom: 250px; /* Adds padding at the bottom of the page */
 }
 
 /* Button Group Styles */
