@@ -14,7 +14,7 @@
         .header-container {
             background-color: #B8B47F;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Added to arrange content vertically */
             align-items: center;
             padding: 0px;
         }
@@ -32,8 +32,39 @@
             margin-top: 20px;
         }
         ul {
-            text-align: left; /* Left-aligns the entire list */
-            padding-left: 20px; /* Adds some padding for indentation */
+            text-align: left;
+            padding-left: 20px;
+        }
+        .hamburger-menu {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            margin-top: 20px; /* Added margin to separate from the header image */
+        }
+        .hamburger-menu div {
+            width: 30px;
+            height: 3px;
+            background-color: black;
+            margin: 4px 0;
+        }
+        .menu-items {
+            display: none;
+            position: absolute; /* Changed from fixed to absolute to position relative to the parent */
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .menu-items a {
+            display: block;
+            padding: 8px;
+            text-decoration: none;
+            color: black;
+            text-align: left;
+        }
+        .menu-items a:hover {
+            background-color: #ddd;
         }
     </style>
 </head>
@@ -41,6 +72,12 @@
     <div id="menu-container"></div>
     <div class="header-container">
         <img src="images and tables/headerimagev2.png" alt="Header Image" class="header-image">
+        <!-- Move the hamburger menu button here -->
+        <div class="hamburger-menu" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
     </div>
     <div class="container">
         <h1>The Usenet Early Histories Project!!</h1>
