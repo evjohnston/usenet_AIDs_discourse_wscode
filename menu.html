@@ -1,44 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <style>
-        .hamburger-menu {
-            position: absolute; /* Position relative to the header container */
-            top: calc(100% + 30px); /* 20px below the header image */
-            left: 20px; /* 20px from the left */
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            z-index: 1000;
-        }
-        .hamburger-menu div {
-            width: 30px;
-            height: 3px;
-            background-color: black;
-            margin: 4px 0;
-        }
-        .menu-items {
-            display: none;
-            position: absolute; /* Position relative to the hamburger menu */
-            top: 40px; /* Slightly below the hamburger menu */
-            left: 0; /* Align with the hamburger menu */
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .menu-items a {
-            display: block;
-            padding: 8px;
-            text-decoration: none;
-            color: black;
-            text-align: left;
-        }
-        .menu-items a:hover {
-            background-color: #ddd;
-        }
-    </style>
+    <!-- No need for styles here -->
 </head>
 <body>
     <div class="hamburger-menu" onclick="toggleMenu()">
