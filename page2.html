@@ -8,6 +8,21 @@
         body { 
             font-family: 'Times New Roman', serif; 
             text-align: center; 
+            margin: 0;
+            padding: 0;
+        }
+        .header-container {
+            position: relative; /* Ensures child elements can be absolutely positioned within */
+            background-color: #B8B47F;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0px;
+        }
+        .header-image {
+            width: 100%;
+            max-width: 2000px;
+            height: auto;
         }
         .container { 
             max-width: 1000px; 
@@ -25,10 +40,24 @@
             margin-top: 20px;
             text-align: left;
         }
+        .next-button {
+            margin-top: 20px;
+        }
+        ul {
+            text-align: left;
+            padding-left: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- Placeholder for the menu, content will be dynamically inserted here -->
     <div id="menu-container"></div>
+
+    <!-- Header section added here -->
+    <div class="header-container">
+        <img src="images and tables/headerimagev2.png" alt="Header Image" class="header-image">
+    </div>
+
     <div class="container">
         <h1>1. Introduction</h1>
         <h2>Introduction to Usenet<sup>[1]</sup></h2>
