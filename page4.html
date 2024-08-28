@@ -4,47 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3. Data</title>
-    <style>
-        body { 
-            font-family: 'Times New Roman', serif; 
-            text-align: center; 
-            margin: 0;
-            padding: 0;
-        }
-        .header-container {
-            position: relative; /* Ensures child elements can be absolutely positioned within */
-            background-color: #B8B47F;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0px;
-        }
-        .header-image {
-            width: 100%;
-            max-width: 2000px;
-            height: auto;
-        }
-        .container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            text-align: left; /* Aligns text to the left for better readability */
-        }
-        .button-group { 
-            margin-top: 20px; 
-            display: flex; 
-            justify-content: space-between; 
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to the external CSS file -->
 </head>
 <body>
-    <!-- Placeholder for the menu, content will be dynamically inserted here -->
-    <div id="menu-container"></div>
+    <!-- Load header dynamically -->
+    <div id="header-container"></div>
 
-    <!-- Header section added here -->
-    <div class="header-container">
-        <img src="images and tables/headerimagev2.png" alt="Header Image" class="header-image">
-    </div>
+    <!-- Load menu dynamically -->
+    <div id="menu-container"></div>
 
     <div class="container">
         <h1>3. Data</h1>
@@ -56,24 +23,18 @@
     </div>
     
     <script>
-        fetch('menu.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('menu-container').innerHTML = data;
-                // Reattach the script to ensure it runs
-                var script = document.createElement('script');
-                script.textContent = `
-                    function toggleMenu() {
-                        var menu = document.getElementById('menuItems');
-                        if (menu.style.display === 'block') {
-                            menu.style.display = 'none';
-                        } else {
-                            menu.style.display = 'block';
-                        }
-                    }
-                `;
-                document.body.appendChild(script);
-            });
+        // Function to load external HTML files into a container
+        function loadHTML(containerId, url) {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById(containerId).innerHTML = data;
+                });
+        }
+
+        // Load the header and menu
+        loadHTML('header-container', 'header.html');
+        loadHTML('menu-container', 'menu.html');
     </script>
 </body>
 </html>
