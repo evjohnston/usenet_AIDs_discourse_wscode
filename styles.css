@@ -8,19 +8,18 @@ body {
 
 /* Header Styles */
 .header-container {
-    position: relative; /* Ensures child elements can be absolutely positioned within */
     background-color: #B8B47F;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0px;
     margin: 0;
+    padding: 0;
 }
 
 .header-image {
-    width: 100%;  /* Makes the width dynamic with the page width */
-    max-width: 2000px; /* Ensures the image doesn't exceed its natural width */
-    height: auto; /* Maintains the aspect ratio of the image */
+    width: 100%;
+    max-width: 2000px;
+    height: auto;
 }
 
 /* Container Styles */
@@ -28,22 +27,39 @@ body {
     max-width: 1000px; 
     margin: 0 auto; 
     padding: 20px; 
-    text-align: left; /* Aligns text to the left for better readability */
+    text-align: left; 
     padding-left: 100px; /* Adds padding to avoid overlap with the menu */
     padding-right: 100px; /* Adds padding to avoid overlap with the menu */
 }
 
 /* Button Group Styles */
-.button-group { 
-    margin-top: 20px; 
-    display: flex; 
-    justify-content: space-between; 
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 20px;
 }
+
+.back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.next-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+/* Additional Padding for the Container to Avoid Overlapping */
+.container {
+    padding-top: 50px; /* Adjust this value to ensure the buttons do not overlap with the content */
 
 /* Menu Styles */
 .hamburger-menu {
-    position: absolute; /* Positions it relative to the header container */
-    top: calc(100% + 30px); /* 20px below the header image */
+    position: absolute; /* Position relative to the header container */
+    top: 520px; /* Adjusted to place the menu below the header */
     left: 20px; /* 20px from the left */
     display: flex;
     flex-direction: column;
@@ -62,7 +78,7 @@ body {
     display: none;
     position: absolute; /* Position relative to the hamburger menu */
     top: 40px; /* Slightly below the hamburger menu */
-    left: 0; /* Align with the hamburger menu */
+    left: 0; /* Aligns with the hamburger menu */
     background-color: white;
     border: 1px solid #ccc;
     padding: 10px;
