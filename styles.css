@@ -28,7 +28,8 @@ body {
     margin: 0 auto; 
     padding: 20px; 
     text-align: left; /* Aligns text to the left for better readability */
-    padding-left: 60px; /* Adds padding to avoid overlap with the menu */
+    padding-left: 100px; /* Adds padding to avoid overlap with the menu */
+    padding-right: 100px; /* Adds padding to avoid overlap with the menu */
 }
 
 /* Button Group Styles */
@@ -40,8 +41,8 @@ body {
 
 /* Menu Styles */
 .hamburger-menu {
-    position: fixed;
-    top: 100px; /* Adjust this value to position the menu below the header image */
+    position: absolute; /* Changed to absolute to position it relative to the header container */
+    top: 100%; /* Places the hamburger menu directly below the header image */
     left: 20px;
     display: flex;
     flex-direction: column;
@@ -58,9 +59,9 @@ body {
 
 .menu-items {
     display: none;
-    position: fixed;
-    top: 130px; /* Adjust this value to match the position of the hamburger menu */
-    left: 20px;
+    position: absolute; /* Positions the menu relative to the hamburger menu */
+    top: 40px; /* Slightly below the hamburger menu */
+    left: 0; /* Aligns with the hamburger menu */
     background-color: white;
     border: 1px solid #ccc;
     padding: 10px;
