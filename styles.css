@@ -14,12 +14,17 @@ body {
     align-items: center;
     margin: 0;
     padding: 0;
+    overflow: hidden; /* Ensures any overflow is hidden */
+    width: 100%; /* Full width of the viewport */
+    height: 500px; /* Fixed height for the header */
+    position: relative; /* To position child elements if necessary */
 }
 
 .header-image {
-    width: 100%;
-    max-width: 2000px;
-    height: auto;
+    width: 100%; /* Full width of the container */
+    height: 100%; /* Full height of the container */
+    object-fit: cover; /* Ensures the image covers the container and crops sides */
+    object-position: center; /* Centers the image within the container */
 }
 
 /* Container Styles */
