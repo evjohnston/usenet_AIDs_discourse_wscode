@@ -31,7 +31,7 @@ body {
     padding-left: 100px; /* Adds padding to avoid overlap with the menu */
     padding-right: 100px; /* Adds padding to avoid overlap with the menu */
     padding-top: 50px; /* Adjust this value to ensure the buttons do not overlap with the content */
-    padding-bottom: 200px; /* Adds padding at the bottom of the page */
+    padding-bottom: 400px; /* Adds padding at the bottom of the page */
 }
 
 /* Button Group Styles */
@@ -86,9 +86,11 @@ body {
 }
 
 /* H1 Styles */
-h1 {
-    color: #8C5638; /* Change the color of the h1 text to #8C5638 */
-}
+h1 {color: #8C5638;}
+h2 {color: #8C5638;}
+h3 {color: #8C5638;}
+h4 {color: #8C5638;}
+h5 {color: #8C5638;}
 
 /* Footnotes Styles */
 .footnotes {
