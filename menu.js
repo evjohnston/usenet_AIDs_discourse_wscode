@@ -26,4 +26,3 @@ function loadHTML(containerId, url) {
 // Load the header, menu, and buttons
 loadHTML('header-container', 'header.html');
 loadHTML('menu-container', 'menu.html');
-loadHTML('buttons-container', 'buttons.html');
