@@ -154,21 +154,9 @@
             <a href="page7.html"><button>Next</button></a>
         </div>
     </div>
-
+    
+    <script src="menu.js"></script>
     <script>
-        // Function to load external HTML files into a container
-        function loadHTML(containerId, url) {
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById(containerId).innerHTML = data;
-                });
-        }
-
-        // Load the header and menu
-        loadHTML('header-container', 'header.html');
-        loadHTML('menu-container', 'menu.html');
-
         // JavaScript for Expandable Sections
         var coll = document.getElementsByClassName("collapsible");
         for (var i = 0; i < coll.length; i++) {
