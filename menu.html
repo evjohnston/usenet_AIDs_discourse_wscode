@@ -3,9 +3,9 @@
 <head>
     <style>
         .hamburger-menu {
-            position: absolute; /* Changed to absolute to position it relative to the header container */
-            top: 100%; /* Position it directly below the header image */
-            left: 20px;
+            position: absolute; /* Position relative to the header container */
+            top: calc(100% + 20px); /* 20px below the header image */
+            left: 20px; /* 20px from the left */
             display: flex;
             flex-direction: column;
             cursor: pointer;
@@ -19,8 +19,8 @@
         }
         .menu-items {
             display: none;
-            position: absolute; /* Position it relative to the hamburger menu */
-            top: 35px; /* Slightly below the hamburger menu */
+            position: absolute; /* Position relative to the hamburger menu */
+            top: 40px; /* Slightly below the hamburger menu */
             left: 0; /* Align with the hamburger menu */
             background-color: white;
             border: 1px solid #ccc;

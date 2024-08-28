@@ -1,5 +1,3 @@
-// menu.js
-
 // Function to load external HTML files into a container
 function loadHTML(containerId, url) {
     fetch(url)
@@ -7,8 +5,8 @@ function loadHTML(containerId, url) {
         .then(data => {
             document.getElementById(containerId).innerHTML = data;
 
-            // If loading the menu, reattach the script to ensure it runs
-            if (url === 'menu.html') {
+            // Reattach the script to ensure it runs if the loaded content has scripts
+            if (containerId === 'menu-container') {
                 var script = document.createElement('script');
                 script.textContent = `
                     function toggleMenu() {
@@ -25,8 +23,6 @@ function loadHTML(containerId, url) {
         });
 }
 
-// Load the header and menu when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadHTML('header-container', 'header.html');
-    loadHTML('menu-container', 'menu.html');
-});
+// Load the header and menu
+loadHTML('header-container', 'header.html');
+loadHTML('menu-container', 'menu.html');
