@@ -8,12 +8,27 @@
         body { 
             font-family: 'Times New Roman', serif; 
             text-align: center; 
+            margin: 0;
+            padding: 0;
+        }
+        .header-container {
+            position: relative; /* Ensures child elements can be absolutely positioned within */
+            background-color: #B8B47F;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0px;
+        }
+        .header-image {
+            width: 100%;  /* Makes the width dynamic with the page width */
+            max-width: 2000px; /* Ensures the image doesn't exceed its natural width */
+            height: auto; /* Maintains the aspect ratio of the image */
         }
         .container { 
             max-width: 1000px; 
             margin: 0 auto; 
             padding: 20px; 
-            text-align: left;
+            text-align: left; /* Aligns text to the left for better readability */
         }
         .button-group { 
             margin-top: 20px; 
@@ -55,7 +70,14 @@
     </style>
 </head>
 <body>
+    <!-- Placeholder for the menu, content will be dynamically inserted here -->
     <div id="menu-container"></div>
+
+    <!-- Header section added here -->
+    <div class="header-container">
+        <img src="images and tables/headerimagev2.png" alt="Header Image" class="header-image">
+    </div>
+
     <div class="container">
         <h1>Python Script Guide</h1>
 
