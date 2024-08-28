@@ -84,6 +84,11 @@ body {
     background-color: #ddd;
 }
 
+/* H1 Styles */
+h1 {
+    color: #8C5638; /* Change the color of the h1 text to #8C5638 */
+}
+
 /* Collapsible Button Styles */
 .collapsible {
     background-color: #FFEFD6;
