@@ -31,6 +31,7 @@ body {
     padding-left: 100px; /* Adds padding to avoid overlap with the menu */
     padding-right: 100px; /* Adds padding to avoid overlap with the menu */
     padding-top: 50px; /* Adjust this value to ensure the buttons do not overlap with the content */
+    padding-bottom: 50px; /* Adds padding at the bottom of the page */
 }
 
 /* Button Group Styles */
@@ -87,6 +88,37 @@ body {
 /* H1 Styles */
 h1 {
     color: #8C5638; /* Change the color of the h1 text to #8C5638 */
+}
+
+/* Footnotes Styles */
+.footnotes {
+    font-size: 0.9em; /* Slightly smaller font size to differentiate from main text */
+    color: #8C5638; /* Sets the text color for footnotes */
+    margin-top: 20px; /* Adds space above the footnotes section */
+    padding-top: 10px; /* Adds padding at the top of the footnotes */
+    border-top: 1px solid #8C5638; /* Adds a top border line to separate footnotes from main content */
+    text-align: left; /* Aligns footnote text to the left for better readability */
+    padding-left: 100px; /* Aligns with container padding */
+    padding-right: 100px; /* Aligns with container padding */
+    max-width: 1000px; /* Ensures the width does not exceed the content container width */
+    margin: 0 auto; /* Centers the footnotes section horizontally */
+}
+
+/* Additional styles for footnote references */
+.footnotes a {
+    text-decoration: none; /* Removes underline from footnote links */
+    color: #8C5638; /* Matches footnote link color to text */
+}
+
+.footnotes a:hover {
+    text-decoration: underline; /* Underline on hover to indicate interactiveness */
+}
+
+/* Footnotes Separator Styles */
+.footer-separator {
+    border-top: 1px solid #8C5638; /* Creates a line with the specified color */
+    margin-top: 30px; /* Adds space above the line to separate it from content */
+    margin-bottom: 20px; /* Adds space below the line for footnotes */
 }
 
 /* Collapsible Button Styles */
