@@ -3,7 +3,7 @@
 <head>
     <style>
         .hamburger-menu {
-            position: fixed;
+            position: absolute; /* Changed to absolute to allow scrolling with the page */
             top: 20px;
             left: 20px;
             display: flex;
@@ -19,7 +19,7 @@
         }
         .menu-items {
             display: none;
-            position: fixed;
+            position: absolute; /* Changed to absolute to allow scrolling with the page */
             top: 50px;
             left: 20px;
             background-color: white;
@@ -29,12 +29,12 @@
             z-index: 1000;
         }
         .menu-items a {
-        display: block;
-        padding: 8px;
-        text-decoration: none;
-        color: black;
-        text-align: left; /* Added this line to left-justify the text */
-    }
+            display: block;
+            padding: 8px;
+            text-decoration: none;
+            color: black;
+            text-align: left;
+        }
         .menu-items a:hover {
             background-color: #ddd;
         }
@@ -60,7 +60,6 @@
         <a href="page11.html">10. Appendix II - Python Script Guide</a>
     </div>
 </body>
-</html>
 <script>
     function toggleMenu() {
         var menu = document.getElementById('menuItems');
@@ -71,3 +70,4 @@
         }
     }
 </script>
+</html>

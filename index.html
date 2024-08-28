@@ -12,6 +12,7 @@
             padding: 0;
         }
         .header-container {
+            position: relative; /* Ensures child elements can be absolutely positioned within */
             background-color: #B8B47F;
             display: flex;
             flex-direction: column;
@@ -35,57 +36,18 @@
             text-align: left;
             padding-left: 20px;
         }
-        .hamburger-menu {
-            position: fixed; /* Changed to fixed to keep it in place */
-            top: 20px; /* Position from the top */
-            left: 20px; /* Position from the left */
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            z-index: 1000; /* Ensure it stays on top of other elements */
-        }
-        .hamburger-menu div {
-            width: 30px;
-            height: 3px;
-            background-color: black;
-            margin: 4px 0;
-        }
-        .menu-items {
-            display: none;
-            position: fixed; /* Keep menu fixed too */
-            top: 50px;
-            left: 20px;
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .menu-items a {
-            display: block;
-            padding: 8px;
-            text-decoration: none;
-            color: black;
-            text-align: left;
-        }
-        .menu-items a:hover {
-            background-color: #ddd;
-        }
     </style>
 </head>
 <body>
-    <!-- Hamburger menu outside the header-container to make it fixed on the page -->
-    <div class="hamburger-menu" onclick="toggleMenu()">
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
+    <!-- Placeholder for the menu, content will be dynamically inserted here -->
     <div id="menu-container"></div>
+
     <div class="header-container">
         <img src="images and tables/headerimagev2.png" alt="Header Image" class="header-image">
     </div>
+
     <div class="container">
-        <h1>The Usenet Early Histories Project!!</h1>
+        <h1>Welcome!</h1>
         <p>Welcome to the Usenet Early Histories Project webpage! This site is a side project that grew out of my master's thesis about AIDS discourses on the <a href="https://en.wikipedia.org/wiki/Usenet" target="_blank">Bulletin Board System Usenet</a> in the early 1980s. Through my research, I found that analyses of early discussions on the platform were really hard to come by, both because the platform’s earlier years aren’t traditionally the focus of the academic literature that covers the platform, and because the archival data for Usenet, which is primarily accessible through <a href="https://en.wikipedia.org/wiki/Google_Groups" target="_blank">Google Groups</a> and the <a href="https://archive.org/details/usenet" target="_blank">Internet Archive</a> (and this <a href="https://usenetarchives.com/index.php?s=soc.motss&t=0&p=1" target="_blank">Usenet Archive</a> site, but it’s never really worked for me), was hard to gather in bulk for your own analysis, especially the farther back you go. Thus, this webpage was born!</p>
 
         <p>On this site, you’ll find:</p>
@@ -101,20 +63,27 @@
             <a href="page2.html"><button>Next</button></a>
         </div>
     </div>
-    <script>
-        function toggleMenu() {
-            var menu = document.getElementById('menuItems');
-            if (menu.style.display === 'block') {
-                menu.style.display = 'none';
-            } else {
-                menu.style.display = 'block';
-            }
-        }
 
+    <script>
+        // Load the menu HTML dynamically
         fetch('menu.html')
             .then(response => response.text())
             .then(data => {
                 document.getElementById('menu-container').innerHTML = data;
+
+                // Reattach the script to ensure it runs correctly after loading
+                var script = document.createElement('script');
+                script.textContent = `
+                    function toggleMenu() {
+                        var menu = document.getElementById('menuItems');
+                        if (menu.style.display === 'block') {
+                            menu.style.display = 'none';
+                        } else {
+                            menu.style.display = 'block';
+                        }
+                    }
+                `;
+                document.body.appendChild(script);
             });
     </script>
 </body>
