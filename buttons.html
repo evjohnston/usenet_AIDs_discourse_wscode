@@ -1,0 +1,45 @@
+<div class="button-group">
+    <a href="#" id="backButton" class="back-button"><button>Back</button></a>
+    <a href="#" id="nextButton" class="next-button"><button>Next</button></a>
+</div>
+
+<script>
+    // Define an array of page paths in order
+    const pages = [
+        'index.html',
+        'page2.html',
+        'page3.html',
+        'page4.html',
+        'page5.html',
+        'page6.html',
+        'page7.html',
+        'page8.html',
+        'page9.html',
+        'page10.html',
+        'page11.html'
+    ];
+
+    // Get the current page filename
+    const currentPage = window.location.pathname.split('/').pop();
+
+    // Find the index of the current page in the array
+    const currentIndex = pages.indexOf(currentPage);
+
+    // Get the back and next buttons
+    const backButton = document.getElementById('backButton');
+    const nextButton = document.getElementById('nextButton');
+
+    // Set the href for the back button if it's not the first page
+    if (currentIndex > 0) {
+        backButton.href = pages[currentIndex - 1];
+    } else {
+        backButton.style.display = 'none'; // Hide the back button on the first page
+    }
+
+    // Set the href for the next button if it's not the last page
+    if (currentIndex < pages.length - 1) {
+        nextButton.href = pages[currentIndex + 1];
+    } else {
+        nextButton.style.display = 'none'; // Hide the next button on the last page
+    }
+</script>
