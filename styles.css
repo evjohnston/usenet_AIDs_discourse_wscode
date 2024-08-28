@@ -86,8 +86,8 @@ body {
 
 /* Collapsible Button Styles */
 .collapsible {
-    background-color: #BAB86C;
-    color: black;
+    background-color: #FFEFD6;
+    color: #8C5638; /* Updated text color */
     cursor: pointer;
     padding: 10px;
     width: 100%;
@@ -99,7 +99,7 @@ body {
 }
 
 .collapsible:hover {
-    background-color: #908E53;
+    background-color: #E2D4BE;
 }
 
 /* Content Styles for Collapsible Sections */
@@ -107,7 +107,7 @@ body {
     padding: 0 18px;
     display: none;
     overflow: hidden;
-    background-color: #f9f9f9;
+    background-color: #FFEFD6;
     margin-top: 5px;
 }
 
