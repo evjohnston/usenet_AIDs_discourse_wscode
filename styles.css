@@ -16,7 +16,7 @@ body {
     padding: 0;
     overflow: hidden; /* Ensures any overflow is hidden */
     width: 100%; /* Full width of the viewport */
-    height: 500px; /* Fixed height for the header */
+    height: 200px; /* Fixed height for the header */
     position: relative; /* To position child elements if necessary */
 }
 
