@@ -3,8 +3,8 @@
 <head>
     <style>
         .hamburger-menu {
-            position: fixed; /* Changed to absolute to allow scrolling with the page */
-            top: px;
+            position: absolute; /* Changed to absolute to position it relative to the header container */
+            top: 100%; /* Position it directly below the header image */
             left: 20px;
             display: flex;
             flex-direction: column;
@@ -19,9 +19,9 @@
         }
         .menu-items {
             display: none;
-            position: fixed; /* Changed to absolute to allow scrolling with the page */
-            top: 50px;
-            left: 20px;
+            position: absolute; /* Position it relative to the hamburger menu */
+            top: 35px; /* Slightly below the hamburger menu */
+            left: 0; /* Align with the hamburger menu */
             background-color: white;
             border: 1px solid #ccc;
             padding: 10px;
