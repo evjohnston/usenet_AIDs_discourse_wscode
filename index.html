@@ -31,38 +31,7 @@
         </div>
     </div>
 
-    <script>
-        // Function to load external HTML files into a container
-        function loadHTML(containerId, url) {
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById(containerId).innerHTML = data;
-                });
-        }
-
-        // Load the header and menu
-        loadHTML('header-container', 'header.html');
-        loadHTML('menu-container', 'menu.html');
-
-        fetch('menu.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('menu-container').innerHTML = data;
-                // Reattach the script to ensure it runs
-                var script = document.createElement('script');
-                script.textContent = `
-                    function toggleMenu() {
-                        var menu = document.getElementById('menuItems');
-                        if (menu.style.display === 'block') {
-                            menu.style.display = 'none';
-                        } else {
-                            menu.style.display = 'block';
-                        }
-                    }
-                `;
-                document.body.appendChild(script);
-            });
-    </script>
+    <!-- Include the external JavaScript file -->
+    <script src="menu.js"></script>
 </body>
 </html>
