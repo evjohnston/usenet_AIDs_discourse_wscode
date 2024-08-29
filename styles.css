@@ -69,8 +69,8 @@ body {
 .menu-items {
     display: none;
     position: absolute; /* Position relative to the hamburger menu */
-    top: 275px; /* Slightly below the hamburger menu */
-    left: 39px; /* Align with the hamburger menu */
+    top: 270px; /* Slightly below the hamburger menu */
+    left: 32px; /* Align with the hamburger menu */
     background-color: white;
     border: 1px solid #ccc;
     padding: 10px;
