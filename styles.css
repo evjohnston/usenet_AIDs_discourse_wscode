@@ -51,8 +51,8 @@ body {
 /* Menu Styles */
 .hamburger-menu {
     position: absolute; /* Relative to the parent container */
-    top: 240px; /* Adjust this value to ensure it's under the header image */
-    left: 40px; /* 20px from the left */
+    top: 235px; /* Adjust this value to ensure it's under the header image */
+    left: 32px; /* 20px from the left */
     display: flex;
     flex-direction: column;
     cursor: pointer;
