@@ -16,7 +16,7 @@ body {
     padding: 0;
     overflow: hidden; /* Ensures any overflow is hidden */
     width: 100%; /* Full width of the viewport */
-    height: 250px; /* Fixed height for the header */
+    height: 200px; /* Fixed height for the header */
     position: relative; /* To position child elements if necessary */
 }
 
@@ -52,7 +52,7 @@ body {
 /* Menu Styles */
 .hamburger-menu {
     position: absolute; /* Relative to the parent container */
-    top: 285px; /* Adjust this value to ensure it's under the header image */
+    top: 235px; /* Adjust this value to ensure it's under the header image */
     left: 32px; /* 20px from the left */
     display: flex;
     flex-direction: column;
@@ -70,7 +70,7 @@ body {
 .menu-items {
     display: none;
     position: absolute; /* Position relative to the hamburger menu */
-    top: 325px; /* Slightly below the hamburger menu */
+    top: 275px; /* Slightly below the hamburger menu */
     left: 35px; /* Align with the hamburger menu */
     background-color: white;
     border: 1px solid #ccc;
