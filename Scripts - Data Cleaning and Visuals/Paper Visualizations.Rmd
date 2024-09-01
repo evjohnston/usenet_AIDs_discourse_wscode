@@ -97,7 +97,7 @@ row_totals <- apply(dtm, 1, sum)
 dtm <- dtm[row_totals > 0, ]
 ```
 
-```{r How Many Topics}
+```{r How Many Topics, eval=FALSE, include=FALSE}
 library(ldatuning)
 
 # Sample a smaller subset of the DTM
@@ -122,9 +122,8 @@ FindTopicsNumber_plot(result)
 ```
 
 ```{r LDA Model}
-# Run LDA model to find themes (adjust number of topics as needed)
 set.seed(123) # Set seed for reproducibility
-lda_model <- LDA(dtm, k = 5, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
+lda_model <- LDA(dtm, k = 8, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
 ```
 
 ```{Top Terms}
