@@ -1,0 +1,72 @@
+---
+title: "Paper Visualization"
+author: "Emerson Johnston"
+lastmodifeddate: "2024-09-01"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Maintenance for R and Python
+```{r Reset and Setup}
+rm(list = ls()) 
+knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_AIDs_discourses_webpage')
+```
+
+```{r R Load Libraries, Directories, and Datasets}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(igraph)
+library(ggraph)
+library(tidytext)
+library(topicmodels)
+library(visNetwork)
+library(RColorBrewer)  
+
+# Load Directories
+output_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage"
+threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
+comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments"
+
+# Load the datasets
+all_threads <- read.csv(file.path(threads_directory, "aids_related_threads_82TO86.csv"))
+all_comments <- read.csv(file.path(comments_directory, "aids_related_comments_82TO86.csv"))
+```
+
+```{r R CSV Cleaning}
+all_threads <- all_threads %>% drop_na()
+all_comments <- all_comments %>% drop_na()
+all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
+all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
+```
+
+```{python Python Load Libraries, Directories, and Datasets}
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import networkx as nx
+import scipy
+
+# Define directories
+output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
+threads_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
+comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
+
+# Load the datasets with the correct file paths
+all_threads = pd.read_csv(os.path.join(threads_directory, "aids_related_threads_82TO86.csv"))
+all_comments = pd.read_csv(os.path.join(comments_directory, "aids_related_comments_82TO86.csv"))
+```
+
+# Theme Prevelance Hypothesis
+
+
+# Emotional Tone Hypothesis
+
+
+# Author Impact Hypothesis

@@ -141,6 +141,18 @@ write.csv(all_threads, file.path(threads_directory, "combined_threads_cleaned.cs
 write.csv(all_comments, file.path(comments_directory, "combined_comments_cleaned.csv"), row.names = FALSE)
 ```
 
+Filtering to 1982-1986
+```{r Filtering to 1982-1986}
+all_comments <- all_comments %>%
+  filter(Date < as.Date("1987-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+all_threads <- all_threads %>%
+  filter(Date < as.Date("1987-01-01")) %>% filter(Date > as.Date("1982-01-01"))
+
+write.csv(all_threads, file.path(threads_directory, "combined_threads_cleaned_82TO86.csv"), row.names = FALSE)
+write.csv(all_comments, file.path(comments_directory, "combined_comments_cleaned_82TO86.csv"), row.names = FALSE)
+```
+
 # Table and Figures
 ```{r Descriptive Statistics}
 # Calculate statistics using dplyr
@@ -211,7 +223,7 @@ comments_in_keyword_threads <- comments_in_keyword_threads %>%
   mutate(Relevancy = calculate_relevancy(Full.Text))
 
 # Save the comments dataframe to CSV
-write.csv(comments_in_keyword_threads, file.path(comments_directory, "aids_related_comments.csv"), row.names = FALSE)
+write.csv(comments_in_keyword_threads, file.path(comments_directory, "aids_related_comments_82TO86.csv"), row.names = FALSE)
 
 # Step 4: Calculate the average relevancy score for each thread
 thread_relevancy_scores <- comments_in_keyword_threads %>%
@@ -224,7 +236,7 @@ threads_summary_df <- all_threads %>%
   left_join(thread_relevancy_scores, by = c("Unique_ThreadID" = "Thread.ID"))
 
 # Save the threads dataframe to CSV
-write.csv(threads_summary_df, file.path(threads_directory, "aids_related_threads.csv"), row.names = FALSE)
+write.csv(threads_summary_df, file.path(threads_directory, "aids_related_threads_82TO86.csv"), row.names = FALSE)
 ```
 
 ```{r Keyword Descriptive Statistics}
