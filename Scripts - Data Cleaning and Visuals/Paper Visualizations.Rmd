@@ -241,25 +241,81 @@ lda_model <- LDA(dtm, k = 5, control = list(seed = 123)) # 'k' is the number of 
 ```
 
 ```{r Top Terms}
-# Display the top terms for each topic
-top_terms <- terms(lda_model, 20)
-print(top_terms)
+# Load required libraries
+library(tidyr)
+library(dplyr)
+library(sjPlot)
 
-# Visualize the top terms for each topic (concise visualization)
-top_terms_df <- tidy(lda_model, matrix = "beta") %>%
+# Assuming top_terms_df is your data frame from the LDA analysis
+
+# Reshape the data frame to have each topic's terms and betas side by side
+reshaped_df <- top_terms_df %>%
   group_by(topic) %>%
-  top_n(20, beta) %>%
+  mutate(term_id = row_number()) %>%
   ungroup() %>%
-  arrange(topic, -beta)
+  pivot_wider(
+    names_from = topic,
+    values_from = c(term, beta),
+    names_glue = "Topic_{topic}_{.value}"
+  )
 
-# Plotting the top terms for each topic
-ggplot(top_terms_df, aes(reorder_within(term, beta, topic), beta, fill = factor(topic))) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free_y") +
-  coord_flip() +
-  scale_x_reordered() +
-  labs(title = "Top Terms in Each Topic", x = "Term", y = "Beta") +
-  theme_minimal()
+reshaped_df <- reshaped_df %>%
+  select(term_id, 
+         starts_with("Topic_1_term"), starts_with("Topic_1_beta"),
+         starts_with("Topic_2_term"), starts_with("Topic_2_beta"),
+         starts_with("Topic_3_term"), starts_with("Topic_3_beta"),
+         starts_with("Topic_4_term"), starts_with("Topic_4_beta"),
+         starts_with("Topic_5_term"), starts_with("Topic_5_beta"))
+
+# Create a styled table using sjPlot
+# tab_df(
+#  reshaped_df,
+#  title = "Top Terms and Betas for Each Topic",
+#  show.rownames = FALSE,
+#  digits = 2,
+#  file = output_file_path
+#  )
+
+library(dplyr)
+library(gt)
+
+# Create the gt table
+gt_table <- reshaped_df %>%
+  gt() %>%
+  tab_spanner(
+    label = "Topic 1",
+    columns = c("Topic_1_term", "Topic_1_beta")
+  ) %>%
+  tab_spanner(
+    label = "Topic 2",
+    columns = c("Topic_2_term", "Topic_2_beta")
+  ) %>%
+  tab_spanner(
+    label = "Topic 3",
+    columns = c("Topic_3_term", "Topic_3_beta")
+  ) %>%
+  tab_spanner(
+    label = "Topic 4",
+    columns = c("Topic_4_term", "Topic_4_beta")
+  ) %>%
+  tab_spanner(
+    label = "Topic 5",
+    columns = c("Topic_5_term", "Topic_5_beta")
+  ) %>%
+  cols_label(
+    term_id = "Term No.",
+    Topic_1_term = "term", Topic_1_beta = "beta",
+    Topic_2_term = "term", Topic_2_beta = "beta",
+    Topic_3_term = "term", Topic_3_beta = "beta",
+    Topic_4_term = "term", Topic_4_beta = "beta",
+    Topic_5_term = "term", Topic_5_beta = "beta"
+  )
+
+gt_table
+
+# Save the gt table to an HTML file
+output_file_path <- file.path(output_directory, "images and tables", "Top Terms and Betas for Each Topic.html")
+gtsave(gt_table, output_file_path)
 ```
 
 ```{r Improved Co-occurrence Network Analysis}
