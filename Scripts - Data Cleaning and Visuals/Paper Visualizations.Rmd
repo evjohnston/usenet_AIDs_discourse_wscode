@@ -204,7 +204,7 @@ comments_corpus <- comments_corpus %>%
   tm_map(removePunctuation) %>%              # Remove punctuation
   tm_map(removeNumbers) %>%                  # Remove numbers
   tm_map(removeWords, stopwords("english")) %>%  # Remove common stop words
-  tm_map(stemDocument) %>%                   # Perform stemming
+#  tm_map(stemDocument) %>%                   # Perform stemming
   tm_map(stripWhitespace)                    # Strip whitespace
 
 # Create Document-Term Matrix (DTM)
@@ -326,7 +326,7 @@ co_occurrence_plot <- ggplot(graph_layout, aes(x = x, y = y)) +
   scale_size(range = c(2, 12), name = "Term Frequency") +
   scale_color_brewer(palette = "Set1", name = "Topic") +
   scale_fill_brewer(palette = "Set1", guide = "none") +  # Remove fill from legend
-  coord_cartesian(xlim = c(-7.5, 7.5), ylim = c(-7.5, 7.5)) +
+  coord_cartesian(xlim = c(-8, 8), ylim = c(-8, 8)) +
   theme_void(base_size = 16) +
   theme(
     aspect.ratio = 1,
