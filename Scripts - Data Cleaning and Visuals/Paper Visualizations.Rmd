@@ -64,7 +64,7 @@ all_comments = pd.read_csv(os.path.join(comments_directory, "aids_related_commen
 ```
 
 # Theme Prevelance Hypothesis
-```{r}
+```{r Data Preparation}
 library(topicmodels)
 library(tm)
 library(SnowballC)
@@ -74,11 +74,8 @@ library(ggplot2)
 library(igraph)
 library(ggraph)
 
-# Load the datasets
-all_comments <- read.csv("/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/aids_related_comments_82TO86.csv")
-
 # Data preparation: Select relevant text data
-comments_corpus <- Corpus(VectorSource(all_comments$Content)) # Replace 'Content' with the actual column name containing text data
+comments_corpus <- Corpus(VectorSource(all_comments$Full.Text)) # Replace 'Content' with the actual column name containing text data
 
 # Text preprocessing
 comments_corpus <- comments_corpus %>%
@@ -93,16 +90,44 @@ comments_corpus <- comments_corpus %>%
 dtm <- DocumentTermMatrix(comments_corpus)
 
 # Remove sparse terms to reduce the size of DTM
-dtm <- removeSparseTerms(dtm, 0.99) # Adjust sparsity threshold if necessary
+dtm <- removeSparseTerms(dtm, 0.92) # Adjust sparsity threshold if necessary
 
 # Check for rows with all zero entries and remove them
 row_totals <- apply(dtm, 1, sum)
 dtm <- dtm[row_totals > 0, ]
+```
 
+```{r How Many Topics}
+library(ldatuning)
+
+# Sample a smaller subset of the DTM
+set.seed(123)
+sample_indices <- sample(1:nrow(dtm), 1000)  # Reduce size to speed up
+sampled_dtm <- dtm[sample_indices, ]
+
+# Optimize LDA to find the best number of topics
+set.seed(123)
+result <- FindTopicsNumber(
+  sampled_dtm,
+  topics = seq(from = 2, to = 10, by = 1),  # Narrow topic range for faster computation
+  metrics = c("Griffiths2004", "Deveaud2014"),  # Use fewer metrics
+  method = "Gibbs",
+  control = list(seed = 123, iter = 500),  # Fewer iterations for quicker results
+  mc.cores = 6L,
+  verbose = TRUE
+)
+
+# Plot results to determine the optimal number of topics
+FindTopicsNumber_plot(result)
+```
+
+```{r LDA Model}
 # Run LDA model to find themes (adjust number of topics as needed)
 set.seed(123) # Set seed for reproducibility
 lda_model <- LDA(dtm, k = 5, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
+```
 
+```{Top Terms}
 # Display the top terms for each topic
 top_terms <- terms(lda_model, 10)
 print(top_terms)
@@ -122,8 +147,9 @@ ggplot(top_terms_df, aes(reorder_within(term, beta, topic), beta, fill = factor(
   scale_x_reordered() +
   labs(title = "Top Terms in Each Topic", x = "Term", y = "Beta") +
   theme_minimal()
+```
 
-# Co-occurrence Network Analysis
+```{r Co-occurrence Network Analysis}
 # Create a co-occurrence matrix
 term_matrix <- as.matrix(dtm)
 co_occurrence <- crossprod(term_matrix)
