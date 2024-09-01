@@ -232,6 +232,7 @@ write.csv(threads_summary_df, file.path(threads_directory, "aids_related_threads
 keywords_summary_df <- comments_in_keyword_threads %>%
   group_by(newsgroup) %>%
   summarize(
+    Unique_Authors = n_distinct(Author),
     Comments_with_Keywords = sum(Relevancy > 0),
     Conversations_Mentioned_In = n_distinct(Thread.ID),
     Total_Comments_In_Threads = n(),
@@ -255,6 +256,7 @@ totals <- keywords_summary_df %>%
     Comments_with_Keywords = sum(Comments_with_Keywords),
     Conversations_Mentioned_In = sum(Conversations_Mentioned_In),
     Total_Comments_In_Threads = sum(Total_Comments_In_Threads),
+    Unique_Authors = sum(Unique_Authors),
     Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
     Average_Relevancy_Score = mean(Average_Relevancy_Score, na.rm = TRUE),
     Average_Thread_Relevancy = mean(Average_Thread_Relevancy, na.rm = TRUE)
