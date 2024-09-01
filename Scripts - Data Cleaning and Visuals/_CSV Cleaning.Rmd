@@ -261,6 +261,8 @@ threads_summary_df_grouped <- threads_summary_df %>%
 keywords_summary_df <- keywords_summary_df %>%
   left_join(threads_summary_df_grouped, by = "newsgroup")
 
+total_unique_authors <- n_distinct(comments_in_keyword_threads$Author)
+
 # Add a totals row
 totals <- keywords_summary_df %>%
   summarize(
@@ -268,7 +270,7 @@ totals <- keywords_summary_df %>%
     Comments_with_Keywords = sum(Comments_with_Keywords),
     Conversations_Mentioned_In = sum(Conversations_Mentioned_In),
     Total_Comments_In_Threads = sum(Total_Comments_In_Threads),
-    Unique_Authors = sum(Unique_Authors),
+    Unique_Authors = total_unique_authors,
     Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
     Average_Relevancy_Score = mean(Average_Relevancy_Score, na.rm = TRUE),
     Average_Thread_Relevancy = mean(Average_Thread_Relevancy, na.rm = TRUE)

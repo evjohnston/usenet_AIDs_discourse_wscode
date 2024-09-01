@@ -26,7 +26,7 @@ library(visNetwork)
 library(RColorBrewer)  
 
 # Load Directories
-output_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage"
+output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage"
 threads_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads"
 comments_directory <- "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments"
 
@@ -63,6 +63,139 @@ all_threads = pd.read_csv(os.path.join(threads_directory, "aids_related_threads_
 all_comments = pd.read_csv(os.path.join(comments_directory, "aids_related_comments_82TO86.csv"))
 ```
 
+```{r Filtering For Relevancy}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Calculate the minimum and maximum of the 'Thread_Relevancy' column
+min_value <- min(all_threads$Thread_Relevancy, na.rm = TRUE)
+max_value <- max(all_threads$Thread_Relevancy, na.rm = TRUE)
+
+# Create four equal-sized bins between the min and max values
+breaks <- seq(min_value, max_value, length.out = 5) 
+
+# Create a factor for quartile ranges based on these breaks
+all_threads$Quartile <- cut(
+  all_threads$Thread_Relevancy,
+  breaks = breaks,
+  labels = c("Q1", "Q2", "Q3", "Q4"),
+  include.lowest = TRUE
+)
+
+# Plot the bar graph showing the frequency of each quartile
+ggplot(all_threads, aes(x = Quartile)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  geom_text(stat='count', aes(label=..count..), vjust=-0.5) +  # Add labels above bars
+  labs(title = "Frequency of Thread Relevancy Quartiles",
+       x = "Quartile",
+       y = "Frequency") +
+  theme_minimal()
+
+# Define the bin width manually
+bin_width <- 0.5
+
+# Plot the histogram with density overlay using all_threads
+ggplot(all_threads, aes(x = Thread_Relevancy)) +
+  geom_histogram(aes(y = ..count..), binwidth = bin_width, fill = "skyblue", color = "black", alpha = 0.7) + 
+  geom_density(aes(y = ..density.. * length(all_threads$Thread_Relevancy) * bin_width), fill = "orange", alpha = 0.4) +  # Scale density to match histogram counts
+  labs(title = "Histogram and Density of Thread Relevancy Scores",
+       x = "Relevancy",
+       y = "Number of Threads") +
+  theme_minimal()
+```
+
+```{r}
+# Filter out Quartile 1
+filtered_threads <- all_threads %>%
+  filter(Quartile != "Q1")
+
+# Plot the bar graph showing the frequency of each quartile
+ggplot(filtered_threads, aes(x = Quartile)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  geom_text(stat='count', aes(label=..count..), vjust=-0.5) +  # Add labels above bars
+  labs(title = "Frequency of Thread Relevancy Quartiles",
+       x = "Quartile",
+       y = "Frequency") +
+  theme_minimal()
+
+# Define the bin width manually
+bin_width <- 0.5
+
+# Plot the histogram with density overlay using all_threads
+ggplot(filtered_threads, aes(x = Thread_Relevancy)) +
+  geom_histogram(aes(y = ..count..), binwidth = bin_width, fill = "skyblue", color = "black", alpha = 0.7) + 
+  geom_density(aes(y = ..density.. * bin_width * nrow(all_threads)), fill = "orange", alpha = 0.4) +  # Scale density to match histogram counts
+  labs(title = "Histogram and Density of Thread Relevancy Scores",
+       x = "Relevancy",
+       y = "Number of Threads") +
+  theme_minimal()
+```
+```{r Get Filtered Comments from Filtered Threads}
+# Filter threads with only one comment out of filtered threads 
+filtered_threads <- filtered_threads %>%
+  filter(Number.of.Messages > 1)
+
+# Filter the comments from 'all_comments' that match the filtered threads
+filtered_comments <- all_comments %>%
+  filter(Thread.ID %in% filtered_threads$Unique_ThreadID)
+
+# Check the result
+head(filtered_comments)
+```
+
+```{r Relevancy Filtered Descriptive Statistics}
+library(sjPlot)
+
+# Step 1: Group by newsgroup and calculate required statistics, including comment relevancy
+keywords_summary_df <- filtered_comments %>%
+  group_by(newsgroup) %>%
+  summarize(
+    Unique_Authors = n_distinct(Author),
+    Comments_with_Keywords = sum(Relevancy > 0),
+    Conversations_Mentioned_In = n_distinct(Thread.ID),
+    Total_Comments_In_Threads = n(),
+    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
+    Average_Relevancy_Score = mean(Relevancy, na.rm = TRUE)
+  )
+
+# Step 2: Calculate thread relevancy averages for filtered threads
+threads_summary_df_grouped <- filtered_threads %>%
+  group_by(newsgroup) %>%
+  summarize(Average_Thread_Relevancy = mean(Thread_Relevancy, na.rm = TRUE))
+
+# Step 3: Combine comment and thread summaries
+keywords_summary_df <- keywords_summary_df %>%
+  left_join(threads_summary_df_grouped, by = "newsgroup")
+
+total_unique_authors <- n_distinct(filtered_comments$Author)
+
+# Step 4: Add a totals row
+totals <- keywords_summary_df %>%
+  summarize(
+    newsgroup = "Total",
+    Comments_with_Keywords = sum(Comments_with_Keywords),
+    Conversations_Mentioned_In = sum(Conversations_Mentioned_In),
+    Total_Comments_In_Threads = sum(Total_Comments_In_Threads),
+    Unique_Authors = total_unique_authors,
+    Percent_Total_Comments_w_Keyword = (Comments_with_Keywords / Total_Comments_In_Threads) * 100,
+    Average_Relevancy_Score = mean(Average_Relevancy_Score, na.rm = TRUE),
+    Average_Thread_Relevancy = mean(Average_Thread_Relevancy, na.rm = TRUE)
+  )
+
+# Step 5: Combine the summary with the totals row
+keywords_summary_df <- bind_rows(keywords_summary_df, totals)
+
+# Correctly construct the output file path
+output_file_path <- file.path(output_directory, "images and tables", "aids_descriptive_statistics_table_relevancy_filtered.html")
+
+# Ensure the directory exists
+dir.create(dirname(output_file_path), recursive = TRUE, showWarnings = FALSE)
+
+# Use the constructed path for saving the file
+tab_df(keywords_summary_df, file = output_file_path)
+```
+
 # Theme Prevelance Hypothesis
 ```{r Data Preparation}
 library(topicmodels)
@@ -90,7 +223,7 @@ comments_corpus <- comments_corpus %>%
 dtm <- DocumentTermMatrix(comments_corpus)
 
 # Remove sparse terms to reduce the size of DTM
-dtm <- removeSparseTerms(dtm, 0.92) # Adjust sparsity threshold if necessary
+dtm <- removeSparseTerms(dtm, 0.90) # Adjust sparsity threshold if necessary
 
 # Check for rows with all zero entries and remove them
 row_totals <- apply(dtm, 1, sum)
@@ -126,15 +259,15 @@ set.seed(123) # Set seed for reproducibility
 lda_model <- LDA(dtm, k = 8, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
 ```
 
-```{Top Terms}
+```{r Top Terms}
 # Display the top terms for each topic
-top_terms <- terms(lda_model, 10)
+top_terms <- terms(lda_model, 20)
 print(top_terms)
 
 # Visualize the top terms for each topic (concise visualization)
 top_terms_df <- tidy(lda_model, matrix = "beta") %>%
   group_by(topic) %>%
-  top_n(10, beta) %>%
+  top_n(20, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
 
@@ -149,25 +282,27 @@ ggplot(top_terms_df, aes(reorder_within(term, beta, topic), beta, fill = factor(
 ```
 
 ```{r Co-occurrence Network Analysis}
-# Create a co-occurrence matrix
-term_matrix <- as.matrix(dtm)
-co_occurrence <- crossprod(term_matrix)
+# Step 1: Filter out terms with lower frequencies or less importance
+# You may set a threshold for filtering less relevant terms
+term_frequency <- rowSums(co_occurrence) # Calculate term frequency
+threshold <- quantile(term_frequency, 0.9) # Set threshold for top 10% most frequent terms
+filtered_terms <- which(term_frequency > threshold)
+filtered_co_occurrence <- co_occurrence[filtered_terms, filtered_terms]
 
-# Build graph object
-graph <- graph_from_adjacency_matrix(co_occurrence, weighted = TRUE, mode = "undirected", diag = FALSE)
-V(graph)$name <- colnames(co_occurrence)
+# Step 2: Create graph object with filtered terms
+graph <- graph_from_adjacency_matrix(filtered_co_occurrence, weighted = TRUE, mode = "undirected", diag = FALSE)
 
-# Simplify graph (remove loops and multiple edges)
+# Step 3: Simplify the graph to avoid self-loops and redundant edges
 graph <- simplify(graph)
 
-# Visualize co-occurrence network
-set.seed(123)
+# Step 4: Visualize the co-occurrence network with improved settings
+set.seed(123)  # For reproducibility
 ggraph(graph, layout = 'fr') + 
-  geom_edge_link(aes(edge_alpha = weight), show.legend = FALSE) + 
-  geom_node_point(color = "blue", size = 5) + 
-  geom_node_text(aes(label = name), repel = TRUE) + 
+  geom_edge_link(aes(edge_alpha = weight), show.legend = FALSE, edge_width = 0.2) + 
+  geom_node_point(color = "blue", size = 4) + 
+  geom_node_text(aes(label = name), repel = TRUE, max.overlaps = 20) + # Increase max.overlaps for ggrepel
   theme_void() +
-  labs(title = "Co-occurrence Network of Themes")
+  labs(title = "Co-occurrence Network of Key Themes")
 ```
 
 
