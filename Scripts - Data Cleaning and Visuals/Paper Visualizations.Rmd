@@ -46,7 +46,7 @@ all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
 all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
 ```
 
-```{python Python Load Libraries, Directories, and Datasets}
+```{python Python Load Libraries, Directories, and Datasets, eval=FALSE, include=FALSE}
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -230,7 +230,9 @@ result <- FindTopicsNumber(
   mc.cores = 6L,
   verbose = TRUE
 )
+```
 
+```{r Plot How Many Topics}
 # Plot results to determine the optimal number of topics
 FindTopicsNumber_plot(result)
 ```
