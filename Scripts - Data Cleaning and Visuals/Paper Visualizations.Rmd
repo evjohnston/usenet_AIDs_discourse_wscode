@@ -90,7 +90,7 @@ ggplot(all_threads, aes(x = Quartile)) +
   labs(title = "Frequency of Thread Relevancy Quartiles",
        x = "Quartile",
        y = "Frequency") +
-  theme_minimal()
+  theme_bw()
 
 # Define the bin width manually
 bin_width <- 0.5
@@ -102,7 +102,7 @@ ggplot(all_threads, aes(x = Thread_Relevancy)) +
   labs(title = "Histogram and Density of Thread Relevancy Scores",
        x = "Relevancy",
        y = "Number of Threads") +
-  theme_minimal()
+  theme_bw()
 ```
 
 ```{r Filtering Out Quartile 1}
@@ -116,7 +116,7 @@ ggplot(filtered_threads, aes(x = Quartile)) +
   labs(title = "Frequency of Thread Relevancy Quartiles",
        x = "Quartile",
        y = "Frequency") +
-  theme_minimal()
+  theme_bw()
 
 # Define the bin width manually
 bin_width <- 0.5
@@ -128,7 +128,7 @@ ggplot(filtered_threads, aes(x = Thread_Relevancy)) +
   labs(title = "Histogram and Density of Thread Relevancy Scores",
        x = "Relevancy",
        y = "Number of Threads") +
-  theme_minimal()
+  theme_bw()
 ```
 ```{r Get Filtered Comments from Filtered Threads}
 # Filter threads with only one comment out of filtered threads 
@@ -480,17 +480,49 @@ top_influential_authors <- author_influence %>%
 # Display the list of top 15 influential authors
 print(top_influential_authors)
 
-output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_influential_authors.html")
-
-tab_df(top_influential_authors,
-  file = output_file_path)
-```
-
-```{r Calculate and Print Author Influence on Sentiment Scores}
 # Filter the all_comments dataset to only include posts by the top 15 influential authors
 top_authors_comments <- filtered_comments %>%
   filter(Author %in% top_influential_authors$Author)
 
+# Assuming `top_authors_comments` already filters the dataset for top influential authors
+top_authors_comments_summary <- top_authors_comments %>%
+  group_by(Author) %>%
+  summarize(
+    Num_Comments = n(),  # Number of comments
+    Num_Threads = n_distinct(Thread.ID),  # Number of unique threads
+    Threads_Started = sum(Thread_Relative_CommentID == "CM00004", na.rm = TRUE),  # Number of threads started
+    Avg_Sentiment = mean(SentimentScore, na.rm = TRUE),  # Average sentiment score
+    Avg_Relevancy = mean(Relevancy, na.rm = TRUE)  # Average relevancy score
+  )
+
+# Merge this summary with the original `top_influential_authors` dataframe if needed
+influential_authors_metadata <- top_influential_authors %>%
+  left_join(top_authors_comments_summary, by = "Author")
+
+
+# Calculate totals for each numeric column
+totals_row <- influential_authors_metadata %>%
+  summarize(
+    Author = "Total",
+    Influence = sum(Influence, na.rm = TRUE),
+    Num_Comments = sum(Num_Comments, na.rm = TRUE),
+    Num_Threads = sum(Num_Threads, na.rm = TRUE),
+    Threads_Started = sum(Threads_Started, na.rm = TRUE),
+    Avg_Sentiment = mean(Avg_Sentiment, na.rm = TRUE),  # This is an average; sum might not make sense for sentiment
+    Avg_Relevancy = mean(Avg_Relevancy, na.rm = TRUE)   # This is an average; sum might not make sense for relevancy
+  )
+
+# Bind the totals row to the bottom of the dataframe
+influential_authors_metadata_with_totals <- bind_rows(influential_authors_metadata, totals_row)
+
+# Display the updated table with totals
+print(influential_authors_metadata_with_totals)
+
+output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_influential_authors.html")
+tab_df(influential_authors_metadata_with_totals, file = output_file_path)
+```
+
+```{r Calculate and Print Author Influence on Sentiment Scores}
 # Calculate descriptive statistics for the sentiment scores of influential authors
 influential_authors_sentiment_stats <- top_authors_comments %>%
   summarize(
@@ -503,7 +535,7 @@ influential_authors_sentiment_stats <- top_authors_comments %>%
     Skewness = skewness(SentimentScore, na.rm = TRUE),
     Kurtosis = kurtosis(SentimentScore, na.rm = TRUE)
   ) %>%
-  mutate(Dataset = "Influential Authors")
+  mutate(Dataset = "Dataset Four")
 
 # Combine the sentiment statistics into one table
 combined_sentiment_stats <- bind_rows(
@@ -744,27 +776,45 @@ best_matches <- topic_similarities %>%
   group_by(Influential_Topic) %>%
   slice_max(order_by = Similarity, n = 1)
 
+print(best_matches)
+
 output_file_path <- file.path(output_directory, "images and tables", "table_topic_matches.html")
 
 tab_df(best_matches, ,
   file = output_file_path)
+
+# Transpose the 'best_matches' dataframe
+transposed_best_matches <- as.data.frame(t(best_matches))
+
+# Display the transposed table
+print(transposed_best_matches)
+
+output_file_path_transposed <- file.path(output_directory, "images and tables", "table_topic_matches_transposed.html")
+tab_df(transposed_best_matches,
+  file = output_file_path_transposed)
 ```
 
 ```{r Similarity Plot}
 library(ggplot2)
 
-ggplot(best_matches, aes(x = factor(Influential_Topic), y = Similarity, fill = factor(Overall_Topic))) +
+# Create the bar chart and annotate with similarity values
+similarity_plot <- ggplot(best_matches, aes(x = factor(Influential_Topic), y = Similarity, fill = factor(Overall_Topic))) +
   geom_bar(stat = "identity") +
+  geom_text(aes(label = round(Similarity, 2)), 
+            position = position_stack(vjust = 0.5), size = 3) + # Add similarity score annotations
   labs(title = "Similarity Between Influential Authors' Topics and Overall Topics",
        x = "Influential Authors' Topic",
        y = "Jaccard Similarity",
        fill = "Best Matching Overall Topic") +
-  theme_minimal() +
+  theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+similarity_plot
 
 ggsave(file.path(output_directory, "images and tables", "plot_topic_influence_comparison_bar_graph.png"), 
        width = 10, height = 6, dpi = 300)
 ```
+    
 
 ```{r Topic Prevelance over Time Plot}
 library(tidyverse)
@@ -827,3 +877,171 @@ output_file_path <- file.path(output_directory, "images and tables", "plot_topic
 ggsave(output_file_path, plot = line_plot, width = 12, height = 8, dpi = 300)
 ```
 
+```{r Distribution of Comments per Newsgroup Plot}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Calculate the total number of comments per author across all newsgroups
+total_comments_by_author <- filtered_comments %>%
+  group_by(Author) %>%
+  summarise(Total_Comments = n())
+
+# Calculate the number of comments per author per newsgroup
+top_authors_by_newsgroup <- filtered_comments %>%
+  group_by(Author, newsgroup) %>%
+  summarise(Number_of_Comments = n())
+
+# Join the total comments data to the newsgroup data
+top_authors_by_newsgroup <- top_authors_by_newsgroup %>%
+  left_join(total_comments_by_author, by = "Author")
+
+# Select the top 15 most active authors by total number of comments
+top_15_authors <- total_comments_by_author %>%
+  arrange(desc(Total_Comments)) %>%
+  slice(1:15)  # Ensure only the top 25 authors are selected
+
+# Filter the main data to include only the top 25 authors
+top_15_data <- top_authors_by_newsgroup %>%
+  filter(Author %in% top_15_authors$Author)
+
+# Create the bar plot using ggplot2 and sort authors in descending order by total number of comments
+bar_plot <- ggplot(top_15_data, aes(x = Number_of_Comments, y = reorder(Author, Total_Comments), fill = newsgroup)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top 15 Most Active Users in Dataset Three by Newsgroup",
+       x = "Number of Comments",
+       y = "Author",
+       fill = "Newsgroup") +
+  theme_bw() +
+  theme(legend.position = "right",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Print the plot
+print(bar_plot)
+
+# Save the plot to a file
+output_file_path <- file.path(output_directory, "images and tables/plot_top_15_most_active_users_by_newsgroup.png")
+ggsave(output_file_path, plot = bar_plot, width = 10, height = 6, dpi = 300)
+```
+```{r Thematic evolution}
+library(tidytext)
+library(tidyverse)
+
+# Identify top keywords for influential authors
+influential_keywords <- top_authors_comments %>%
+  unnest_tokens(word, Full.Text) %>%
+  anti_join(stop_words) %>%
+  count(Author, word, sort = TRUE) %>%
+  group_by(Author) %>%
+  top_n(5, n) %>%
+  ungroup()
+
+# Get the top 20 keywords across all influential authors
+top_keywords <- influential_keywords %>%
+  group_by(word) %>%
+  summarise(total = sum(n)) %>%
+  top_n(20, total) %>%
+  pull(word)
+
+# Function to calculate keyword prevalence
+calculate_keyword_prevalence <- function(df, keywords) {
+  df %>%
+    unnest_tokens(word, Full.Text) %>%
+    filter(word %in% keywords) %>%
+    count(Date = floor_date(Date, "month"), word) %>%
+    complete(Date, word, fill = list(n = 0)) %>%
+    group_by(Date) %>%
+    mutate(prevalence = n / sum(n)) %>%
+    ungroup()
+}
+
+# Calculate keyword prevalence for influential authors and overall discussions
+influential_prevalence <- calculate_keyword_prevalence(top_authors_comments, top_keywords)
+overall_prevalence <- calculate_keyword_prevalence(filtered_comments, top_keywords)
+
+# Combine the data
+combined_prevalence <- bind_rows(
+  influential_prevalence %>% mutate(group = "Influential Authors"),
+  overall_prevalence %>% mutate(group = "Overall Discussion")
+)
+
+# Create the plot
+keyword_adoption_plot <- ggplot(combined_prevalence, aes(x = Date, y = prevalence, color = group)) +
+  geom_line() +
+  facet_wrap(~word, scales = "free_y", ncol = 4) +
+  labs(title = "Keyword Adoption Over Time: Influential Authors vs Overall Discussion",
+       x = "Date",
+       y = "Keyword Prevalence",
+       color = "Group") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+
+# Print the plot
+print(keyword_adoption_plot)
+
+# Save the plot
+output_file_path <- file.path(output_directory, "images and tables", "plot_keyword_adoption_over_time.png")
+ggsave(output_file_path, plot = keyword_adoption_plot, width = 16, height = 10, dpi = 300)
+```
+
+```{r Influence Propogation}
+library(igraph)
+library(ggraph)
+library(tidygraph)
+library(dplyr)
+
+# Identify influential authors' threads
+influential_threads <- filtered_comments %>%
+  filter(Author %in% top_influential_authors$Author) %>%
+  select(Thread.ID) %>%
+  distinct()
+
+# Create edges based on who commented after influential authors
+edges <- filtered_comments %>%
+  inner_join(influential_threads, by = "Thread.ID") %>%
+  arrange(Thread.ID, Date) %>%
+  group_by(Thread.ID) %>%
+  mutate(PreviousAuthor = lag(Author)) %>%
+  ungroup() %>%
+  filter(!is.na(PreviousAuthor), 
+         Author != PreviousAuthor,
+         PreviousAuthor %in% top_influential_authors$Author) %>%
+  select(from = PreviousAuthor, to = Author) %>%
+  group_by(from, to) %>%
+  summarise(weight = n(), .groups = "drop") %>%
+  # Filter for stronger connections
+  filter(weight > quantile(weight, 0.25))
+
+# Create graph
+graph <- graph_from_data_frame(edges, directed = TRUE)
+
+# Calculate node sizes based on in-degree
+node_sizes <- degree(graph, mode = "in")
+
+# Identify top 10 influential nodes
+top_nodes <- names(sort(node_sizes, decreasing = TRUE)[1:10])
+
+# Create layout
+layout <- create_layout(graph, layout = "fr")
+
+# Create plot
+influence_plot <- ggraph(layout) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2, arrow = arrow(length = unit(2, 'mm')), end_cap = circle(3, 'mm')) +
+  geom_node_point(aes(size = node_sizes, color = name %in% top_influential_authors$Author)) +
+  geom_node_text(aes(label = ifelse(name %in% top_nodes, name, "")), repel = TRUE, size = 3) +
+  scale_edge_width(range = c(0.1, 2)) +
+  scale_size(range = c(1, 10)) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "lightblue")) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Influence Propagation Network",
+       subtitle = "Node size represents incoming connections, edge width represents frequency of interaction\nRed nodes are influential authors, labeled nodes are top 10 by incoming connections")
+
+# Print the plot
+print(influence_plot)
+
+# Save the plot
+output_file_path <- file.path(output_directory, "images and tables", "plot_influence_propagation_network_improved.png")
+ggsave(output_file_path, plot = influence_plot, width = 20, height = 16, dpi = 300)
+```
