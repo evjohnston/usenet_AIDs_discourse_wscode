@@ -195,23 +195,27 @@ tab_df(keywords_summary_df, file = output_file_path)
 
 # Theme Prevelance Hypothesis
 ```{r Data Preparation}
+# Load required libraries
+library(tm)
+
 # Data preparation: Select relevant text data
-comments_corpus <- Corpus(VectorSource(filtered_comments$Full.Text)) # Replace 'Content' with the actual column name containing text data
+comments_corpus <- Corpus(VectorSource(filtered_comments$Full.Text))  # Replace 'Full.Text' with the actual column name containing text data
 
 # Text preprocessing
 comments_corpus <- comments_corpus %>%
-  tm_map(content_transformer(tolower)) %>%  # Convert text to lowercase
-  tm_map(removePunctuation) %>%              # Remove punctuation
-  tm_map(removeNumbers) %>%                  # Remove numbers
-  tm_map(removeWords, stopwords("english")) %>%  # Remove common stop words
-#  tm_map(stemDocument) %>%                   # Perform stemming
-  tm_map(stripWhitespace)                    # Strip whitespace
+  tm_map(content_transformer(tolower)) %>%                   # Convert text to lowercase
+  tm_map(content_transformer(function(x) gsub("[^[:alnum:] ]", " ", x))) %>%  # Remove non-alphanumeric characters
+  tm_map(removePunctuation) %>%                               # Remove punctuation
+  tm_map(removeNumbers) %>%                                   # Remove numbers
+  tm_map(removeWords, stopwords("english")) %>%               # Remove common stop words
+  # tm_map(stemDocument) %>%                                  # Perform stemming (optional)
+  tm_map(stripWhitespace)                                     # Strip whitespace
 
 # Create Document-Term Matrix (DTM)
 dtm <- DocumentTermMatrix(comments_corpus)
 
 # Remove sparse terms to reduce the size of DTM
-dtm <- removeSparseTerms(dtm, 0.90) # Adjust sparsity threshold if necessary
+dtm <- removeSparseTerms(dtm, 0.90)  # Adjust sparsity threshold if necessary
 
 # Check for rows with all zero entries and remove them
 row_totals <- apply(dtm, 1, sum)
@@ -224,10 +228,10 @@ set.seed(123)
 result <- FindTopicsNumber(
   dtm,
   topics = seq(from = 2, to = 10, by = 1),  # Narrow topic range for faster computation
-  metrics = c("Griffiths2004", "Deveaud2014"),  # Use fewer metrics
+  metrics = c("Griffiths2004", "Deveaud2014", "CaoJuan2009", "Arun2010"),  # Use fewer metrics
   method = "Gibbs",
-  control = list(seed = 123, iter = 500),  # Fewer iterations for quicker results
-  mc.cores = 6L,
+  control = list(seed = 123, iter = 200),  # Fewer iterations for quicker results
+  mc.cores = 2L,
   verbose = TRUE
 )
 ```
@@ -239,7 +243,7 @@ FindTopicsNumber_plot(result)
 
 ```{r LDA Model}
 set.seed(123) # Set seed for reproducibility
-lda_model <- LDA(dtm, k = 5, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
+lda_model <- LDA(dtm, k = 6, control = list(seed = 123)) # 'k' is the number of topics, adjust as needed
 ```
 
 ```{r Top Terms}
@@ -248,7 +252,16 @@ library(tidyr)
 library(dplyr)
 library(sjPlot)
 
-# Assuming top_terms_df is your data frame from the LDA analysis
+# Visualize the top terms for each topic (concise visualization)
+top_terms_df <- tidy(lda_model, matrix = "beta") %>%
+  group_by(topic) %>%
+  top_n(20, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+# Round beta values to 3 decimal places
+top_terms_df <- top_terms_df %>%
+  mutate(beta = round(beta, 3))
 
 # Reshape the data frame to have each topic's terms and betas side by side
 reshaped_df <- top_terms_df %>%
@@ -267,16 +280,8 @@ reshaped_df <- reshaped_df %>%
          starts_with("Topic_2_term"), starts_with("Topic_2_beta"),
          starts_with("Topic_3_term"), starts_with("Topic_3_beta"),
          starts_with("Topic_4_term"), starts_with("Topic_4_beta"),
-         starts_with("Topic_5_term"), starts_with("Topic_5_beta"))
-
-# Create a styled table using sjPlot
-# tab_df(
-#  reshaped_df,
-#  title = "Top Terms and Betas for Each Topic",
-#  show.rownames = FALSE,
-#  digits = 2,
-#  file = output_file_path
-#  )
+         starts_with("Topic_5_term"), starts_with("Topic_5_beta"),
+         starts_with("Topic_6_term"), starts_with("Topic_6_beta"))
 
 library(dplyr)
 library(gt)
@@ -284,34 +289,20 @@ library(gt)
 # Create the gt table
 gt_table <- reshaped_df %>%
   gt() %>%
-  tab_spanner(
-    label = "Topic 1",
-    columns = c("Topic_1_term", "Topic_1_beta")
-  ) %>%
-  tab_spanner(
-    label = "Topic 2",
-    columns = c("Topic_2_term", "Topic_2_beta")
-  ) %>%
-  tab_spanner(
-    label = "Topic 3",
-    columns = c("Topic_3_term", "Topic_3_beta")
-  ) %>%
-  tab_spanner(
-    label = "Topic 4",
-    columns = c("Topic_4_term", "Topic_4_beta")
-  ) %>%
-  tab_spanner(
-    label = "Topic 5",
-    columns = c("Topic_5_term", "Topic_5_beta")
-  ) %>%
+  tab_spanner(label = "Topic 1", columns = c("Topic_1_term", "Topic_1_beta")) %>%
+  tab_spanner(label = "Topic 2", columns = c("Topic_2_term", "Topic_2_beta")) %>%
+  tab_spanner(label = "Topic 3", columns = c("Topic_3_term", "Topic_3_beta")) %>%
+  tab_spanner(label = "Topic 4", columns = c("Topic_4_term", "Topic_4_beta")) %>%
+  tab_spanner(label = "Topic 5", columns = c("Topic_5_term", "Topic_5_beta")) %>%
+  tab_spanner(label = "Topic 6", columns = c("Topic_6_term", "Topic_6_beta")) %>%
   cols_label(
     term_id = "Term No.",
-    Topic_1_term = "term", Topic_1_beta = "beta",
+    Topic_1_term = "term", Topic_1_beta = "beta", 
     Topic_2_term = "term", Topic_2_beta = "beta",
-    Topic_3_term = "term", Topic_3_beta = "beta",
+    Topic_3_term = "term", Topic_3_beta = "beta", 
     Topic_4_term = "term", Topic_4_beta = "beta",
-    Topic_5_term = "term", Topic_5_beta = "beta"
-  )
+    Topic_5_term = "term", Topic_5_beta = "beta", 
+    Topic_6_term = "term", Topic_6_beta = "beta")
 
 gt_table
 
@@ -358,11 +349,12 @@ graph_layout$y <- scale(graph_layout$y, center = TRUE, scale = TRUE) * 4  # Incr
 
 # Create intuitive topic names based on LDA results
 topic_names <- c(
-  "Medical Testing & Treatment",
-  "Personal Experiences & Opinions",
-  "Disease Research & Transmission",
-  "Sexual Orientation & Behavior",
-  "Social Discussion & Impact"
+  "Topic 1",
+  "Topic 2",
+  "Topic 3",
+  "Topic 4",
+  "Topic 5",
+  "Topic 6"
 )
 term_topic_df$topic_name <- topic_names[term_topic_df$topic]
 
