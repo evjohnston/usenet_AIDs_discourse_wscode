@@ -70,7 +70,7 @@ sns.countplot(data=all_comments, x='newsgroup', order=all_comments['newsgroup'].
 plt.title('Distribution of Comments per Newsgroup')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/distribution_of_comments_per_newsgroup.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/old web visualizations/distribution_of_comments_per_newsgroup.png"))
 plt.show()
 ```
 
@@ -83,7 +83,7 @@ plt.title('Number of Threads Across All Newsgroups Over Time')
 plt.xlabel('Month')
 plt.ylabel('Number of Threads')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/number_of_threads_over_time.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/number_of_threads_over_time.png"))
 plt.show()
 ```
 
@@ -97,7 +97,7 @@ plt.xlabel('Newsgroup')
 plt.ylabel('Average Number of Comments')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/average_comments_per_thread_by_newsgroup.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/average_comments_per_thread_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -108,7 +108,7 @@ plt.title('Sentiment Score Distribution Across All Comments')
 plt.xlabel('Sentiment Score')
 plt.ylabel('Frequency')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_score_distribution_across_all_comments.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_score_distribution_across_all_comments.png"))
 plt.show()
 ```
 
@@ -146,7 +146,7 @@ plt.legend(title='Newsgroup', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 
 # Save the figure
-plt.savefig(os.path.join(output_directory, "images and tables/top_25_most_active_users_by_newsgroup.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/top_25_most_active_users_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -182,7 +182,7 @@ plt.title('Daily Activity Heatmap Across All Newsgroups')
 plt.xlabel('Day of Week')
 plt.ylabel('Hour of Day')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/combined_daily_activity_heatmap.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/combined_daily_activity_heatmap.png"))
 plt.show()
 ```
 
@@ -209,7 +209,7 @@ plt.imshow(wordcloud_all, interpolation='bilinear')
 plt.axis('off')
 plt.title('Most Common Words in All Usenet Comments')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_all_comments.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/word_cloud_all_comments.png"))
 plt.show()
 
 # Generate word clouds by newsgroup
@@ -227,7 +227,7 @@ for newsgroup in all_comments['newsgroup'].unique():
     plt.tight_layout()
     
     # Use f-string to save the file with the specific newsgroup name
-    plt.savefig(os.path.join(output_directory, f"images and tables/word_cloud_{newsgroup}.png"))
+    plt.savefig(os.path.join(output_directory, f"images and tables/old web visualizations/word_cloud_{newsgroup}.png"))
     plt.show()
 ```
 
@@ -242,7 +242,7 @@ plt.title('Growth of Newsgroups Over Time')
 plt.xlabel('Month')
 plt.ylabel('Cumulative Number of Newsgroups')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/growth_of_newsgroups_over_time.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/growth_of_newsgroups_over_time.png"))
 plt.show()
 ```
 
@@ -257,7 +257,7 @@ plt.title('Author Engagement: Comments Made vs. Threads Initiated')
 plt.xlabel('Number of Threads Initiated')
 plt.ylabel('Number of Comments Made')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/author_engagement_scatterplot.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/author_engagement_scatterplot.png"))
 plt.show()
 ```
 
@@ -280,7 +280,7 @@ plt.xlabel('Date')
 plt.ylabel('Average Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_over_time.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_over_time.png"))
 plt.show()
 ```
 
@@ -294,7 +294,7 @@ plt.xlabel('Newsgroup')
 plt.ylabel('Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_distribution_by_newsgroup.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_distribution_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -313,7 +313,7 @@ plt.xlabel('Month')
 plt.ylabel('Newsgroup')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/monthly_sentiment_heatmap.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/monthly_sentiment_heatmap.png"))
 plt.show()
 ```
 
@@ -336,7 +336,7 @@ plt.xlabel('Date')
 plt.ylabel('Average Sentiment Score')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_over_time_by_newsgroup.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_over_time_by_newsgroup.png"))
 plt.show()
 ```
 
@@ -351,7 +351,7 @@ plt.title('Sentiment Polarity Distribution')
 plt.xlabel('Sentiment Polarity')
 plt.ylabel('Number of Comments')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_polarity_distribution.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_polarity_distribution.png"))
 plt.show()
 ```
 
@@ -366,7 +366,7 @@ plt.xlabel('Date')
 plt.ylabel('Rolling Average Sentiment Score (30-day window)')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/sentiment_trend_rolling_average.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/sentiment_trend_rolling_average.png"))
 plt.show()
 ```
 
@@ -385,7 +385,7 @@ plt.imshow(wordcloud_positive, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top Words in Positive Sentiment Comments')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_positive_sentiment.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/word_cloud_positive_sentiment.png"))
 plt.savefig(0_output_path)
 plt.show()
 
@@ -397,7 +397,7 @@ plt.imshow(wordcloud_negative, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top Words in Negative Sentiment Comments')
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, "images and tables/word_cloud_negative_sentiment.png"))
+plt.savefig(os.path.join(output_directory, "images and tables/old web visualizations/word_cloud_negative_sentiment.png"))
 plt.show()
 ```
 
@@ -626,7 +626,7 @@ network_graph <- visNetwork(nodes, edges, width = "100vw", height = "100vh") %>%
 network_graph
 
 # Save the network graph to an HTML file with full width and height
-network_graph_path <- file.path(output_directory, "images and tables/network_graph.html")
+network_graph_path <- file.path(output_directory, "images and tables/old web visualizations/network_graph.html")
 visSave(network_graph, file = network_graph_path)
 
 # Step 4: Add the custom legend directly into the HTML file after it is saved
