@@ -479,6 +479,11 @@ top_influential_authors <- author_influence %>%
 
 # Display the list of top 15 influential authors
 print(top_influential_authors)
+
+output_file_path <- file.path(output_directory, "images and tables", "influential_authors_descriptive_statistics.html")
+
+tab_df(top_influential_authors,
+  file = output_file_path)
 ```
 
 ```{r Calculate and Print Author Influence on Sentiment Scores}
@@ -561,7 +566,7 @@ combined_monthly_sentiment <- bind_rows(
 
 # Create the time series plot with a white background and no legend title
 time_series_plot <- ggplot(combined_monthly_sentiment, aes(x = Month, y = AverageSentiment, color = Dataset)) +
-  geom_line(size = 1.2) +
+  geom_line(size = 1.2) + 
   labs(
     title = "Time Series of Average Sentiment Scores Over Time",
     x = "Month",
@@ -570,6 +575,23 @@ time_series_plot <- ggplot(combined_monthly_sentiment, aes(x = Month, y = Averag
   theme_bw() +  # Use theme_bw() for a white background
   theme(legend.position = "bottom") +
   guides(color = guide_legend(title = NULL))  # Remove the legend title
+
+# Add key event annotations
+key_events <- data.frame(
+  date = as.Date(c("1982-05-11", "1983-09-30", "1984-04-23", "1984-10-01", 
+                   "1985-03-02", "1985-07-25", "1985-10-02", "1986-02-01", 
+                   "1986-08-14")),  # Add the key event dates
+  event = c("Term 'AIDS' Introduced", "CDC AIDS Guidelines", "HHS HIV/AIDS", 
+            "First HIV Blood Test", "First HIV Test Approved", "Rock Hudson's Diagnosis", 
+            "HIV Transmission Routes", "'HIV' Renamed", "AZT Approved"),  # Shorter descriptions
+  y = c(-25, -25, -25, -25, -25, -25, -25, -25, -25)  # Set y position for text labels
+)
+
+# Adding the annotations to the plot
+time_series_plot <- time_series_plot +
+  geom_vline(data = key_events, aes(xintercept = date), linetype = "dashed", alpha = 0.5) +  # Vertical dashed lines
+  geom_text(data = key_events, aes(x = date, y = y, label = event), 
+            size = 3, angle = 90, vjust = -0.5, hjust = 0, inherit.aes = FALSE)  # Event labels
 
 # Print the plot to the R console
 print(time_series_plot)
@@ -594,7 +616,7 @@ influential_dtm <- DocumentTermMatrix(influential_corpus)
 influential_dtm <- removeSparseTerms(influential_dtm, 0.90)
 ```
 
-```{r How Many Topics}
+```{r How Many Topics, eval=FALSE, include=FALSE}
 # Optimize LDA to find the best number of topics
 set.seed(123)
 result <- FindTopicsNumber(
@@ -610,6 +632,8 @@ result <- FindTopicsNumber(
 # Plot results to determine the optimal number of topics
 FindTopicsNumber_plot(result)
 ```
+
+Six Topics!
 
 ```{r LDA Model and Top Terms}
 # LDA for influential authors
@@ -720,7 +744,10 @@ best_matches <- topic_similarities %>%
   group_by(Influential_Topic) %>%
   slice_max(order_by = Similarity, n = 1)
 
-tab_df(best_matches)
+output_file_path <- file.path(output_directory, "images and tables", "topic_matches_table.html")
+
+tab_df(best_matches, ,
+  file = output_file_path)
 ```
 
 ```{r Similarity Plot}
@@ -739,5 +766,64 @@ ggsave(file.path(output_directory, "images and tables", "topic_influence_compari
        width = 10, height = 6, dpi = 300)
 ```
 
+```{r Topic Prevelance over Time Plot}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(scales)
+library(topicmodels)
 
+# Function to get topic distributions for a set of documents
+get_topic_distribution <- function(lda_model, dtm) {
+  topic_dist <- posterior(lda_model)$topics
+  colnames(topic_dist) <- paste0("Topic_", 1:ncol(topic_dist))
+  cbind(data.frame(Document = rownames(dtm)), as.data.frame(topic_dist))
+}
+
+# Get topic distributions for all documents and influential authors' documents
+all_topic_dist <- get_topic_distribution(lda_model, dtm)
+influential_topic_dist <- get_topic_distribution(influential_lda, influential_dtm)
+
+# Add date and author information
+all_topic_dist$Date <- filtered_comments$Date[match(all_topic_dist$Document, rownames(dtm))]
+all_topic_dist$Influential <- FALSE
+
+influential_topic_dist$Date <- top_authors_comments$Date[match(influential_topic_dist$Document, rownames(influential_dtm))]
+influential_topic_dist$Influential <- TRUE
+
+# Combine datasets
+combined_topic_dist <- rbind(all_topic_dist, influential_topic_dist)
+
+# Calculate monthly topic prevalence
+monthly_topic_prevalence <- combined_topic_dist %>%
+  mutate(Month = floor_date(Date, "month")) %>%
+  group_by(Month, Influential) %>%
+  summarise(across(starts_with("Topic_"), mean)) %>%
+  pivot_longer(cols = starts_with("Topic_"), names_to = "Topic", values_to = "Prevalence")
+
+# Create a custom labeler for facet labels
+facet_labels <- c(`FALSE` = "All Authors", `TRUE` = "Influential Authors")
+
+# Create the line plot for topic prevalence over time with better scaling
+line_plot <- ggplot(monthly_topic_prevalence, aes(x = Month, y = Prevalence, color = Topic, group = Topic)) +
+  geom_line(size = 1.5) +  # Increase line size for better visibility
+  facet_wrap(~Influential, scales = "free_y", ncol = 1, labeller = labeller(Influential = facet_labels)) +  # Use labeller to rename facets
+  scale_color_brewer(palette = "Dark2") +  # Use a palette with more distinct colors
+  labs(title = "Topic Prevalence Over Time: Influential Authors vs Overall Discussion",
+       x = "Date",
+       y = "Topic Prevalence",
+       color = "Topic") +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1)) +  # Rotate x-axis labels for better readability
+  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y") +
+  scale_y_continuous(labels = scales::percent_format(), limits = c(0.155, 0.1825))  # Zoom in on relevant y-axis range
+
+# Print the plot
+print(line_plot)
+
+# Save the plot with a higher DPI for better clarity
+output_file_path <- file.path(output_directory, "images and tables", "topic_prevalence_line_plot.png")
+ggsave(output_file_path, plot = line_plot, width = 12, height = 8, dpi = 300)
+```
 
