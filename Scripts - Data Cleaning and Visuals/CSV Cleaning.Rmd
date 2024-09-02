@@ -181,7 +181,7 @@ totals <- summary_df %>%
 summary_df <- bind_rows(summary_df, totals)
 
 # Print the summary data frame with totals
-tab_df(summary_df, file = paste0(output_directory, "images and tables/descriptive_statistics_table.html"))
+tab_df(summary_df, file = paste0(output_directory, "images and tables/table_descriptive_statistics_full.html"))
 ```
 
 # Additional Filtering
@@ -280,5 +280,5 @@ totals <- keywords_summary_df %>%
 keywords_summary_df <- bind_rows(keywords_summary_df, totals)
 
 # Print the keyword summary data frame with totals
-tab_df(keywords_summary_df, file = paste0(output_directory, "images and tables/aids_descriptive_statistics_table.html"))
+tab_df(keywords_summary_df, file = paste0(output_directory, "images and tables/table_descriptive_statistics_aids.html"))
 ```

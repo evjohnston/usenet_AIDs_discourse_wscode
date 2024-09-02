@@ -184,7 +184,7 @@ totals <- keywords_summary_df %>%
 keywords_summary_df <- bind_rows(keywords_summary_df, totals)
 
 # Correctly construct the output file path
-output_file_path <- file.path(output_directory, "images and tables", "aids_descriptive_statistics_table_relevancy_filtered.html")
+output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_aids_relevancy_filtered.html")
 
 # Ensure the directory exists
 dir.create(dirname(output_file_path), recursive = TRUE, showWarnings = FALSE)
@@ -308,7 +308,7 @@ gt_table <- reshaped_df %>%
 gt_table
 
 # Save the gt table to an HTML file
-output_file_path <- file.path(output_directory, "images and tables", "Top Terms and Betas for Each Topic.html")
+output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(all_authors).html")
 gtsave(gt_table, output_file_path)
 ```
 
@@ -397,7 +397,7 @@ co_occurrence_plot <- ggplot(graph_layout, aes(x = x, y = y)) +
 print(co_occurrence_plot)
 
 # Save the plot to a PNG file with increased size
-ggsave(file.path(output_directory, "images and tables", "co-occurrence_network.png"), 
+ggsave(file.path(output_directory, "images and tables", "plot_co-occurrence_network.png"), 
        plot = co_occurrence_plot, width = 20, height = 16, dpi = 300)  # Increased dimensions
 ```
 
@@ -480,7 +480,7 @@ top_influential_authors <- author_influence %>%
 # Display the list of top 15 influential authors
 print(top_influential_authors)
 
-output_file_path <- file.path(output_directory, "images and tables", "influential_authors_descriptive_statistics.html")
+output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_influential_authors.html")
 
 tab_df(top_influential_authors,
   file = output_file_path)
@@ -507,14 +507,14 @@ influential_authors_sentiment_stats <- top_authors_comments %>%
 
 # Combine the sentiment statistics into one table
 combined_sentiment_stats <- bind_rows(
-  aids_sentiment_stats,  # AIDS-related discussions
   usenet_sentiment_stats,  # Entire Usenet dataset
+  aids_sentiment_stats,  # AIDS-related discussions
   influential_authors_sentiment_stats  # Influential authors
 ) %>%
   select(Dataset, everything())  # Ensure 'Dataset' column is the first column
 
 # Correctly construct the output file path
-output_file_path <- file.path(output_directory, "images and tables", "sentiment_score_descriptive_statistics_combined.html")
+output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_sentiment_scores_combined.html")
 
 combined_sentiment_stats
 
@@ -597,7 +597,7 @@ time_series_plot <- time_series_plot +
 print(time_series_plot)
 
 # Save the plot to a PNG file
-output_file_path <- file.path(output_directory, "images and tables", "time_series_sentiment_plot.png")
+output_file_path <- file.path(output_directory, "images and tables", "plot_time_series_sentiment_line_graph.png")
 ggsave(output_file_path, plot = time_series_plot, width = 10, height = 6, dpi = 300)
 ```
 
@@ -700,7 +700,7 @@ gt_table <- reshaped_df %>%
 gt_table
 
 # Save the gt table to an HTML file
-output_file_path <- file.path(output_directory, "images and tables", "Top Terms and Betas for Each Topic (Influential Authors).html")
+output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(influential_authors).html")
 gtsave(gt_table, output_file_path)
 ```
 
@@ -744,7 +744,7 @@ best_matches <- topic_similarities %>%
   group_by(Influential_Topic) %>%
   slice_max(order_by = Similarity, n = 1)
 
-output_file_path <- file.path(output_directory, "images and tables", "topic_matches_table.html")
+output_file_path <- file.path(output_directory, "images and tables", "table_topic_matches.html")
 
 tab_df(best_matches, ,
   file = output_file_path)
@@ -762,7 +762,7 @@ ggplot(best_matches, aes(x = factor(Influential_Topic), y = Similarity, fill = f
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave(file.path(output_directory, "images and tables", "topic_influence_comparison.png"), 
+ggsave(file.path(output_directory, "images and tables", "plot_topic_influence_comparison_bar_graph.png"), 
        width = 10, height = 6, dpi = 300)
 ```
 
@@ -823,7 +823,7 @@ line_plot <- ggplot(monthly_topic_prevalence, aes(x = Month, y = Prevalence, col
 print(line_plot)
 
 # Save the plot with a higher DPI for better clarity
-output_file_path <- file.path(output_directory, "images and tables", "topic_prevalence_line_plot.png")
+output_file_path <- file.path(output_directory, "images and tables", "plot_topic_prevalence_line_graph.png")
 ggsave(output_file_path, plot = line_plot, width = 12, height = 8, dpi = 300)
 ```
 
