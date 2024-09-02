@@ -47,27 +47,6 @@ all_comments$Date <- as.Date(all_comments$Date, format = "%Y-%m-%d")
 all_threads$Date <- as.Date(all_threads$Date, format = "%Y-%m-%d")
 ```
 
-```{python Python Load Libraries, Directories, and Datasets, eval=FALSE, include=FALSE}
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-import networkx as nx
-import scipy
-
-# Define directories
-output_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/"
-threads_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Threads/"
-comments_directory = "/Users/emerson/Github/usenet_AIDs_discourses_webpage/CSV Files/Comments/"
-
-# Load the datasets with the correct file paths
-all_threads = pd.read_csv(os.path.join(threads_directory, "aids_related_threads_82TO86.csv"))
-all_comments = pd.read_csv(os.path.join(comments_directory, "aids_related_comments_82TO86.csv"))
-```
-
 ```{r Filtering For Relevancy}
 # Calculate the minimum and maximum of the 'Thread_Relevancy' column
 min_value <- min(all_threads$Thread_Relevancy, na.rm = TRUE)
@@ -186,15 +165,14 @@ totals <- keywords_summary_df %>%
 keywords_summary_df <- bind_rows(keywords_summary_df, totals)
 
 # Correctly construct the output file path
-output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_aids_relevancy_filtered.html")
+# output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_aids_relevancy_filtered.html")
 
 # Ensure the directory exists
-dir.create(dirname(output_file_path), recursive = TRUE, showWarnings = FALSE)
+# dir.create(dirname(output_file_path), recursive = TRUE, showWarnings = FALSE)
 
 # Use the constructed path for saving the file
-tab_df(keywords_summary_df, file = output_file_path)
+# tab_df(keywords_summary_df, file = output_file_path)
 ```
-
 
 # Theme Prevelance Hypothesis
 ```{r Data Preparation}
@@ -311,8 +289,8 @@ gt_table <- reshaped_df %>%
 gt_table
 
 # Save the gt table to an HTML file
-output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(all_authors).html")
-gtsave(gt_table, output_file_path)
+# output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(all_authors).html")
+# gtsave(gt_table, output_file_path)
 ```
 
 ```{r Co-occurrence Network Analysis}
@@ -323,8 +301,14 @@ library(igraph)
 
 # Step 1: Calculate Term Frequencies and Filter for Top Terms
 co_occurrence <- crossprod(as.matrix(dtm)) # Create co-occurrence matrix
+
+binary_dtm <- as.matrix(dtm)
+binary_dtm[binary_dtm > 0] <- 1  # Convert counts to 1s
+
+# Step 2: Calculate document frequency for each term
+term_frequency <- colSums(binary_dtm)
+
 # Set a threshold to filter less relevant terms based on frequency
-term_frequency <- rowSums(co_occurrence) # Calculate term frequency
 threshold <- quantile(term_frequency, 0.75) # Set threshold for top 25% most frequent terms
 filtered_terms <- which(term_frequency > threshold)
 filtered_co_occurrence <- co_occurrence[filtered_terms, filtered_terms]
@@ -400,38 +384,8 @@ co_occurrence_plot <- ggplot(graph_layout, aes(x = x, y = y)) +
 print(co_occurrence_plot)
 
 # Save the plot to a PNG file with increased size
-ggsave(file.path(output_directory, "images and tables", "plot_co-occurrence_network.png"), 
-       plot = co_occurrence_plot, width = 20, height = 16, dpi = 300)  # Increased dimensions
-```
-
-```{r Interactive Co-occurrence Network with Plotly, eval=TRUE, include=TRUE}
-# Load necessary library
-library("threejs")
-
-# Prepare data for 3D network
-# We will use the filtered_co_occurrence and term_topic_df from the previous code block
-
-# Create an igraph object from the filtered co-occurrence matrix
-graph_3d <- graph_from_adjacency_matrix(filtered_co_occurrence, weighted = TRUE, mode = "undirected", diag = FALSE)
-
-# Simplify the graph to avoid self-loops and redundant edges
-graph_3d <- simplify(graph_3d)
-
-# Prepare colors based on topic assignment
-topic_colors <- RColorBrewer::brewer.pal(6, "Set1")[term_topic_df$topic]
-
-# Create the 3D force-directed network
-network_3d <- graphjs(
-  graph_3d,
-  vertex.size = log1p(term_frequency[filtered_terms]),
-  vertex.label = V(graph_3d)$name,
-  vertex.color = topic_colors,
-  edge.width = E(graph_3d)$weight / max(E(graph_3d)$weight) * 5,  # Scale edge width
-  main = "Interactive 3D Co-occurrence Network of Key Themes in AIDS Discussion"
-)
-
-# Save the interactive 3D network to an HTML file
-htmlwidgets::saveWidget(network_3d, file = file.path(output_directory, "images and tables/new web visualizations", "interactive_plot_3d_cooccurrence_network.html"))
+# ggsave(file.path(output_directory, "images and tables", "plot_co-occurrence_network.png"), 
+#       plot = co_occurrence_plot, width = 20, height = 16, dpi = 300)  # Increased dimensions
 ```
 
 # Emotional Tone Hypothesis
@@ -551,8 +505,8 @@ influential_authors_metadata_with_totals <- bind_rows(influential_authors_metada
 # Display the updated table with totals
 print(influential_authors_metadata_with_totals)
 
-output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_influential_authors.html")
-tab_df(influential_authors_metadata_with_totals, file = output_file_path)
+# output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_influential_authors.html")
+# tab_df(influential_authors_metadata_with_totals, file = output_file_path)
 ```
 
 ```{r Calculate and Print Author Influence on Sentiment Scores}
@@ -579,19 +533,19 @@ combined_sentiment_stats <- bind_rows(
   select(Dataset, everything())  # Ensure 'Dataset' column is the first column
 
 # Correctly construct the output file path
-output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_sentiment_scores_combined.html")
+# output_file_path <- file.path(output_directory, "images and tables", "table_descriptive_statistics_sentiment_scores_combined.html")
 
 combined_sentiment_stats
 
 # Display the combined descriptive statistics table using sjPlot
-tab_df(
-  combined_sentiment_stats,
-  title = "Descriptive Statistics for Sentiment Scores of Different Datasets",
-  show.rownames = FALSE,
-  show.ci = FALSE,
-  show.p = FALSE,
-  digits = 2,
-  file = output_file_path)
+# tab_df(
+  #combined_sentiment_stats,
+  #title = "Descriptive Statistics for Sentiment Scores of Different Datasets",
+  #show.rownames = FALSE,
+  #show.ci = FALSE,
+  #show.p = FALSE,
+  #digits = 2,
+  #file = output_file_path)
 ```
 
 ```{r Time Series Plot of Sentiment Scores}
@@ -662,8 +616,8 @@ time_series_plot <- time_series_plot +
 print(time_series_plot)
 
 # Save the plot to a PNG file
-output_file_path <- file.path(output_directory, "images and tables", "plot_time_series_sentiment_line_graph.png")
-ggsave(output_file_path, plot = time_series_plot, width = 10, height = 6, dpi = 300)
+# output_file_path <- file.path(output_directory, "images and tables", "plot_time_series_sentiment_line_graph.png")
+# ggsave(output_file_path, plot = time_series_plot, width = 10, height = 6, dpi = 300)
 ```
 
 # Author Impact Hypothesis
@@ -765,8 +719,8 @@ gt_table <- reshaped_df %>%
 gt_table
 
 # Save the gt table to an HTML file
-output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(influential_authors).html")
-gtsave(gt_table, output_file_path)
+# output_file_path <- file.path(output_directory, "images and tables", "table_top_terms_and_betas_(influential_authors).html")
+# gtsave(gt_table, output_file_path)
 ```
 
 ```{r Topic Matching}
@@ -811,10 +765,10 @@ best_matches <- topic_similarities %>%
 
 print(best_matches)
 
-output_file_path <- file.path(output_directory, "images and tables", "table_topic_matches.html")
+#output_file_path <- file.path(output_directory, "images and tables", "table_topic_matches.html")
 
-tab_df(best_matches, ,
-  file = output_file_path)
+#tab_df(best_matches, ,
+ #file = output_file_path)
 
 # Transpose the 'best_matches' dataframe
 transposed_best_matches <- as.data.frame(t(best_matches))
@@ -822,9 +776,8 @@ transposed_best_matches <- as.data.frame(t(best_matches))
 # Display the transposed table
 print(transposed_best_matches)
 
-output_file_path_transposed <- file.path(output_directory, "images and tables", "table_topic_matches_transposed.html")
-tab_df(transposed_best_matches,
-  file = output_file_path_transposed)
+# output_file_path_transposed <- file.path(output_directory, "images and tables", "table_topic_matches_transposed.html")
+# tab_df(transposed_best_matches, file = output_file_path_transposed)
 ```
 
 ```{r Similarity Plot}
@@ -844,8 +797,7 @@ similarity_plot <- ggplot(best_matches, aes(x = factor(Influential_Topic), y = S
 
 similarity_plot
 
-ggsave(file.path(output_directory, "images and tables", "plot_topic_influence_comparison_bar_graph.png"), 
-       width = 10, height = 6, dpi = 300)
+# ggsave(file.path(output_directory, "images and tables", "plot_topic_influence_comparison_bar_graph.png"), width = 10, height = 6, dpi = 300)
 ```
     
 
@@ -906,8 +858,8 @@ line_plot <- ggplot(monthly_topic_prevalence, aes(x = Month, y = Prevalence, col
 print(line_plot)
 
 # Save the plot with a higher DPI for better clarity
-output_file_path <- file.path(output_directory, "images and tables", "plot_topic_prevalence_line_graph.png")
-ggsave(output_file_path, plot = line_plot, width = 12, height = 8, dpi = 300)
+# output_file_path <- file.path(output_directory, "images and tables", "plot_topic_prevalence_line_graph.png")
+# ggsave(output_file_path, plot = line_plot, width = 12, height = 8, dpi = 300)
 ```
 
 ```{r Distribution of Comments per Newsgroup Plot}
@@ -953,9 +905,10 @@ bar_plot <- ggplot(top_15_data, aes(x = Number_of_Comments, y = reorder(Author, 
 print(bar_plot)
 
 # Save the plot to a file
-output_file_path <- file.path(output_directory, "images and tables/plot_top_15_most_active_users_by_newsgroup.png")
-ggsave(output_file_path, plot = bar_plot, width = 10, height = 6, dpi = 300)
+# output_file_path <- file.path(output_directory, "images and tables/plot_top_15_most_active_users_by_newsgroup.png")
+# ggsave(output_file_path, plot = bar_plot, width = 10, height = 6, dpi = 300)
 ```
+
 ```{r Thematic evolution}
 library(tidytext)
 library(tidyverse)
@@ -1014,8 +967,8 @@ keyword_adoption_plot <- ggplot(combined_prevalence, aes(x = Date, y = prevalenc
 print(keyword_adoption_plot)
 
 # Save the plot
-output_file_path <- file.path(output_directory, "images and tables", "plot_keyword_adoption_over_time.png")
-ggsave(output_file_path, plot = keyword_adoption_plot, width = 16, height = 10, dpi = 300)
+# output_file_path <- file.path(output_directory, "images and tables", "plot_keyword_adoption_over_time.png")
+# ggsave(output_file_path, plot = keyword_adoption_plot, width = 16, height = 10, dpi = 300)
 ```
 
 ```{r Influence Propogation}
@@ -1075,6 +1028,10 @@ influence_plot <- ggraph(layout) +
 print(influence_plot)
 
 # Save the plot
-output_file_path <- file.path(output_directory, "images and tables", "plot_influence_propagation_network_improved.png")
-ggsave(output_file_path, plot = influence_plot, width = 20, height = 16, dpi = 300)
+# output_file_path <- file.path(output_directory, "images and tables", "plot_influence_propagation_network_improved.png")
+# ggsave(output_file_path, plot = influence_plot, width = 20, height = 16, dpi = 300)
 ```
+
+
+
+

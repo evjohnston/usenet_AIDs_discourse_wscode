@@ -320,8 +320,14 @@ library(igraph)
 
 # Step 1: Calculate Term Frequencies and Filter for Top Terms
 co_occurrence <- crossprod(as.matrix(dtm)) # Create co-occurrence matrix
+
+binary_dtm <- as.matrix(dtm)
+binary_dtm[binary_dtm > 0] <- 1  # Convert counts to 1s
+
+# Step 2: Calculate document frequency for each term
+term_frequency <- colSums(binary_dtm)
+
 # Set a threshold to filter less relevant terms based on frequency
-term_frequency <- rowSums(co_occurrence) # Calculate term frequency
 threshold <- quantile(term_frequency, 0.75) # Set threshold for top 25% most frequent terms
 filtered_terms <- which(term_frequency > threshold)
 filtered_co_occurrence <- co_occurrence[filtered_terms, filtered_terms]
@@ -377,7 +383,7 @@ co_occurrence_plot <- ggplot(graph_layout, aes(x = x, y = y)) +
   scale_size(range = c(2, 12), name = "Term Frequency") +
   scale_color_brewer(palette = "Set1", name = "Topic") +
   scale_fill_brewer(palette = "Set1", guide = "none") +  # Remove fill from legend
-  coord_cartesian(xlim = c(-8, 8), ylim = c(-8, 8)) +
+  coord_cartesian(xlim = c(-9, 9), ylim = c(-9, 9)) +
   theme_void(base_size = 16) +
   theme(
     aspect.ratio = 1,
@@ -1044,4 +1050,111 @@ print(influence_plot)
 # Save the plot
 output_file_path <- file.path(output_directory, "images and tables", "plot_influence_propagation_network_improved.png")
 ggsave(output_file_path, plot = influence_plot, width = 20, height = 16, dpi = 300)
+```
+# For Webpage
+
+```{r Interactive Co-Occurance Network of Top Terms, eval=TRUE}
+# Load necessary libraries
+library(visNetwork)
+library(igraph)
+
+library(visNetwork)
+library(igraph)
+
+# Create an igraph object from the filtered co-occurrence matrix
+graph_3d <- graph_from_adjacency_matrix(filtered_co_occurrence, weighted = TRUE, mode = "undirected", diag = FALSE)
+
+# Simplify the graph to avoid self-loops and redundant edges
+graph_3d <- simplify(graph_3d)
+
+# Prepare colors based on topic assignment
+topic_colors <- RColorBrewer::brewer.pal(6, "Set1")[term_topic_df$topic]
+
+# Prepare data for visNetwork
+nodes <- data.frame(
+  id = V(graph_3d)$name,
+  label = V(graph_3d)$name,  # Labels are always visible
+  group = term_topic_df$topic,  # Group nodes by topic
+  value = log1p(term_frequency[filtered_terms]) * 8,  # Increase node size scaling for visibility
+  title = paste("<p><b>Node:</b>", V(graph_3d)$name, "<br><b>Frequency:</b>", term_frequency[filtered_terms], "</p>")  # Custom hover popups
+)
+
+# Sort nodes alphabetically by label
+nodes <- nodes[order(nodes$label), ]
+
+edges <- data.frame(
+  from = as.character(ends(graph_3d, E(graph_3d))[, 1]),
+  to = as.character(ends(graph_3d, E(graph_3d))[, 2]),
+  value = E(graph_3d)$weight / max(E(graph_3d)$weight) * 1,  # Scale edge width for visibility
+  label = round(E(graph_3d)$weight, 2)  # Add edge labels
+)
+
+network_vis <- visNetwork(nodes, edges, width = "100%", height = "90vh") %>%
+  visNodes(
+    shape = "dot",
+    scaling = list(min = 5, max = 30),
+    font = list(size = 35),
+    color = list(
+      background = topic_colors,
+      border = "black",
+      highlight = "red"
+    ),
+    title = nodes$title
+  ) %>%
+  visEdges(
+    width = ~value,
+    color = list(color = 'gray', highlight = 'red'),
+    smooth = list(enabled = TRUE, type = "continuous", roundness = 1)
+  ) %>%
+  visOptions(
+    highlightNearest = list(enabled = TRUE, hover = TRUE),
+    nodesIdSelection = list(enabled = TRUE, useLabels = TRUE, main = "Select by term"),  # Changed label for node selection
+    selectedBy = list(variable = "group", sort = TRUE, main = "Select by topic")  # Changed label for group selection
+  ) %>%
+  visPhysics(
+    stabilization = FALSE,
+    solver = "barnesHut",
+    barnesHut = list(
+      gravitationalConstant = -30000,  # Increase negative value for stronger repulsion
+      springLength = 500,              # Increase spring length to spread nodes apart
+      springConstant = 0.01            # Decrease spring constant for more flexible edges
+    )
+  ) %>%
+  visInteraction(
+    dragNodes = TRUE,
+    dragView = TRUE,
+    zoomView = TRUE,
+    navigationButtons = TRUE,  # Adds navigation buttons
+    keyboard = TRUE
+  ) %>%
+  visLayout(
+    improvedLayout = TRUE
+  )
+
+# Save the network graph to an HTML file with full width and height
+network_graph_path <- file.path(output_directory, "images and tables/new web visualizations/interactive_plot_3d_cooccurrence_network.html")
+visSave(network_vis, file = network_graph_path)
+
+# Custom title and legend creation in HTML
+title_html <- '
+<div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; font-family: Arial, sans-serif;">
+  Interactive Co-Occurrence Network of Top Terms
+</div>
+'
+
+legend_html <-'
+<div style="position: absolute; top: 40px; right: 40px; background-color: #f0f0f0; border: 1px solid #666; padding: 7px; text-padding: 7px; border-radius: 5px; font-family: Arial, sans-serif;">
+  <span style="color: #94df5c;">●</span> Topic 1
+  <span style="color: #ffff54;">●</span> Topic 2
+  <span style="color: #eb8584;">●</span> Topic 3<br>
+  <span style="color: #a787de;">●</span> Topic 4
+  <span style="color: #dd82ee;">●</span> Topic 5
+  <span style="color: #9fc0f7;">●</span> Topic 6
+</div>
+'
+
+# Inject the custom title and legend into the HTML file
+html_content <- readLines(network_graph_path)
+html_content <- c(title_html, html_content, legend_html)
+writeLines(html_content, network_graph_path)
 ```
