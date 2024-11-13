@@ -1040,9 +1040,7 @@ influence_plot <- ggraph(layout) +
   scale_size(range = c(1, 10)) +
   scale_color_manual(values = c("TRUE" = "red", "FALSE" = "lightblue")) +
   theme_minimal() +
-  theme(legend.position = "none") +
-  labs(title = "Influence Propagation Network",
-       subtitle = "Node size represents incoming connections, edge width represents frequency of interaction\nRed nodes are influential authors, labeled nodes are top 10 by incoming connections")
+  theme(legend.position = "none") 
 
 # Print the plot
 print(influence_plot)
