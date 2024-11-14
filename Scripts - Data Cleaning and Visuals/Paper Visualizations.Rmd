@@ -8,7 +8,7 @@ output:
   pdf_document: default
 ---
 
-# Maintenance for R and Python
+# Maintenance for R and Python.
 ```{r Reset and Setup}
 rm(list = ls()) 
 knitr::opts_knit$set(root.dir = '/Users/emerson/Github/usenet_AIDs_discourses_webpage')
